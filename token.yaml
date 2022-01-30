@@ -1,0 +1,17 @@
+!!python/object/new:oauthlib.oauth2.rfc6749.tokens.OAuth2Token
+dictitems:
+  access_token: ya29.A0ARrdaM_Zh0xCtD3zAUqIjJyGLNN5yEe2UKelMASzmq6BTrURCT1tminAbtTFJdf_eUscM7O5nhZFqjLC1VfP_NL-TSGlemj6mYsWjODZckw5lt1YZLIIMR7WPcAmEZ5SXYqpwMxmvmpYKhSz2NSU6nHqhB2T
+  expires_at: 1643507769.1775682
+  expires_in: 3599
+  refresh_token: 1//04qA49y8ugcoICgYIARAAGAQSNwF-L9IrqqcFHP592-ISuGVGxcwPwnmnU4Z_mUeXy0tp1oIP60YSzGWma2-eRxvq_JVVA3TMKoo
+  scope:
+  - https://www.googleapis.com/auth/yt-analytics-monetary.readonly
+  - https://www.googleapis.com/auth/yt-analytics.readonly
+  token_type: Bearer
+state:
+  _new_scope: !!set
+    https://www.googleapis.com/auth/yt-analytics-monetary.readonly: null
+    https://www.googleapis.com/auth/yt-analytics.readonly: null
+  _old_scope: !!set
+    https://www.googleapis.com/auth/yt-analytics-monetary.readonly: null
+    https://www.googleapis.com/auth/yt-analytics.readonly: null
