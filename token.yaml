@@ -1,12 +1,12 @@
 !!python/object/new:oauthlib.oauth2.rfc6749.tokens.OAuth2Token
 dictitems:
-  access_token: ya29.A0ARrdaM_Zh0xCtD3zAUqIjJyGLNN5yEe2UKelMASzmq6BTrURCT1tminAbtTFJdf_eUscM7O5nhZFqjLC1VfP_NL-TSGlemj6mYsWjODZckw5lt1YZLIIMR7WPcAmEZ5SXYqpwMxmvmpYKhSz2NSU6nHqhB2T
-  expires_at: 1643507769.1775682
+  access_token: ya29.A0ARrdaM_CR4UGpV7IZXDPd1c3ik7QvvmHx3R0LHi8KUpDz5XeeFtu5BbBmIGiRKpnrsAuzYgrQ13w9D-3GuXAv_QSLkvcgG1vsggqBwfQbM-2II4g3NVYQZtnXFOkPQOI6-lW_2kh21Az2yvU3sj7jcXTiwf8
+  expires_at: 1643590902.71154
   expires_in: 3599
-  refresh_token: 1//04qA49y8ugcoICgYIARAAGAQSNwF-L9IrqqcFHP592-ISuGVGxcwPwnmnU4Z_mUeXy0tp1oIP60YSzGWma2-eRxvq_JVVA3TMKoo
+  refresh_token: 1//04Bpf-BkaddM3CgYIARAAGAQSNwF-L9IrJ91y04hZRpN3OyV9TMmriqCCEj7894BEQ4XG_KM8XQ9LcV9VxmTHEnGc6Qd9uTthnBs
   scope:
-  - https://www.googleapis.com/auth/yt-analytics-monetary.readonly
   - https://www.googleapis.com/auth/yt-analytics.readonly
+  - https://www.googleapis.com/auth/yt-analytics-monetary.readonly
   token_type: Bearer
 state:
   _new_scope: !!set
