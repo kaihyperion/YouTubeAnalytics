@@ -5,14 +5,16 @@ import configparser
 from googleapiclient.discovery import build
 import generate_conf
 import re
+import pandas as pd
+import xlsxwriter
+from datetime import datetime
 config = configparser.ConfigParser()
 config.read('conf.ini')
 
 class YouTubeData:
     
     def __init__(self, credentials):
-        config = configparser.ConfigParser()
-        config.read('conf.ini')
+
         
         ### configuration settings
         self.api_name = config.get('YouTube Data', 'api_service_name')
@@ -26,7 +28,9 @@ class YouTubeData:
         # api call settings
         self.part = 'statistics, contentDetails, snippet'
         
-        
+        #Save settings
+        self.current_PATH = os.path.dirname(os.path.abspath(__file__))
+        self.target_PATH = os.path.join(self.current_PATH, 'data')
         ## Channel Data
         self.response = None
         self.channelID = None
@@ -58,6 +62,9 @@ class YouTubeData:
         self.video_length = []
         self.video_thumbnails = []
         
+        self.seconds_list = []
+        
+        
     def api_build(self):
         """Using Google API Client, connect with API DATA V3
         
@@ -66,7 +73,8 @@ class YouTubeData:
         self.build = build(serviceName = self.api_name, version = self.api_version, credentials = self.credentials)
         
     
-    
+    def xslxWriter(self):
+        return pd.ExcelWriter(f"{self.channelName}.xlsx", engine='xlsxwriter')
     ##########################################
     ### Functions for Channel Related Data ###
     ##########################################
@@ -106,7 +114,10 @@ class YouTubeData:
         return channelId_list, description_list, thumbnail_list
     
     
-    
+    def getMyChannelID(self):
+        response = self.build.channels().list(part = 'snippet, contentDetails, statistics',
+                                   mine = True).execute()
+        return response['items'][0]['id']
     def setChannelID(self, channelID):
         """Sets the channel ID
 
@@ -119,6 +130,11 @@ class YouTubeData:
     
     
     def setChannelName(self, channelName):
+        """Sets the ChannelNameq
+
+        Args:
+            channelName (str): Channel Name of the YouTuber
+        """
         self.channelName = channelName
             
     
@@ -128,8 +144,10 @@ class YouTubeData:
         response = self.build.channels().list(part=self.part, id=self.channelID).execute()
         self.response = response
         
-        
-        
+    def getChannelName(self):
+        """If we have response from getChannelRequest, we can also get Channel Name
+        """
+        self.setChannelName(self.response['items'][0]['snippet']['title'])
         
     def getStatistics(self):
         """Retrieves Statistics of the channel
@@ -186,7 +204,7 @@ class YouTubeData:
         **** RUN setVideoList first!!!
         """
         self.videoIDList = list(map(lambda k:k['snippet']['resourceId']['videoId'], self.videoList))
-        return self.videoIDList
+
     
     
     def setVideoDataList(self):
@@ -209,7 +227,7 @@ class YouTubeData:
             self.publishedDate.append((self.videoList[count])['snippet']['publishedAt'])
             self.video_description.append((self.videoList[count])['snippet']['description'])
             self.videoIds.append(self.videoList[count]['snippet']['resourceId']['videoId'])
-            self.video_thumbnails.append(self.videoList[count]['snippet']['thumbnails']['standard']['url'])
+            self.video_thumbnails.append(self.videoList[count]['snippet']['thumbnails']['high']['url'])
             self.video_length.append(self.videoDataList[count]['contentDetails']['duration'])
             try:
                 self.like_count.append(int((self.videoDataList[count])['statistics']['likeCount']))
@@ -240,7 +258,6 @@ class YouTubeData:
             count += 1
         
         
-    
         
     def parseISO8601(self, duration):
         regex= re.compile(r'PT((\d{1,3})H)?((\d{1,3})M)?((\d{1,2})S)?')
@@ -266,5 +283,58 @@ class YouTubeData:
             
         return duration
     
+    
+    
+    def parseVideoLength(self):
+        self.seconds_list = []
+        
+        for i in range(len(self.video_length)):
+            
+            seconds = self.parseISO8601(self.video_length[i])
+            self.seconds_list.append(seconds)
+            self.video_length[i] = time.strftime('%H:%M:%S', time.gmtime(seconds))
+    
+    
+    def createDF(self):
+        """Create DataFrame
+        """
+        data = {'channelID': self.channelID,
+                'channelName': self.channelName,
+                'title': self.titles,
+                'videoIDs':self.videoIds,
+                # 'video_description': self.video_description,
+                'publishedDate':self.publishedDate,
+                'likes':self.like_count,
+                'views':self.views,
+                'comment':self.comment_count,
+                'video_length':self.video_length,
+                'length_in_seconds':self.seconds_list,
+                'thumbnail':self.video_thumbnails}
+        return pd.DataFrame(data)
+        
+        
+        
+    def downloadCSV(self):
+        channelData = self.createDF()
+        path = os.path.join(self.target_PATH, self.channelName)
+        
+        if os.path.isdir(path):
+            writer = pd.ExcelWriter(f'{path}/{datetime.now().strftime("%m.%d.%Y_%H:%M")}.xlsx', engine='xlsxwriter')
+            
+            channelData.to_excel(writer, sheet_name = self.channelName[:30])
+            writer.save()
+            return channelData.to_csv(f'{path}/{datetime.now().strftime("%m.%d.%Y_%H:%M")}.csv', index=False)
+            
+        else:
+            
+            os.mkdir(path)
+            writer = pd.ExcelWriter(f'{path}/{datetime.now().strftime("%m.%d.%Y_%H:%M")}.xlsx', engine='xlsxwriter')
+            
+            channelData.to_excel(writer, sheet_name = self.channelName[:30])
+            writer.save()
+            return channelData.to_csv(f'{path}/{datetime.now().strftime("%m.%d.%Y_%H:%M")}.csv', index=False)
+            
+        # if there is not a folder named
+      
     
     
