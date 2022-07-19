@@ -1,6 +1,7 @@
 import os
 import secrets
 import requests
+import streamlit as st
 from requests.adapters import HTTPAdapter
 from requests_oauthlib import OAuth2Session #https://docs.authlib.org/en/latest/client/oauth2.html
 from urllib3.util.retry import Retry
@@ -76,14 +77,19 @@ class Authorize:
             authorization_base_url,
             access_type="offline",
             prompt="select_account")
-        print("Please click the link and authorize: ", authorization_url)
         
-        response_code = input('Paste the response token: ')
-        
-        self.token = self.session.fetch_token(
-            self.token_uri, client_secret = self.client_secret,
-            code = response_code)
-        self.save_token(self.token)
+        st.write("Please click the link and authorize: ", authorization_url)
+        with st.form("token_form"):
+            
+            response_code = st.text_input("Paste the response token: ")
+            token_submit = st.form_submit_button('Submit Token')
+        # response_code = input('Paste the response token: ')
+        if token_submit:
+            st.write("Token Submitted!")
+            self.token = self.session.fetch_token(
+                self.token_uri, client_secret = self.client_secret,
+                code = response_code)
+            self.save_token(self.token)
         
     def authorize(self):
         token = self.load_token()

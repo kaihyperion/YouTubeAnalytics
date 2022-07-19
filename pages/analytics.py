@@ -34,7 +34,7 @@ def app():
     
     #inputting Date of searches
     if 'start' not in st.session_state:
-        st.session_state['start'] = "2018-01-01"
+        st.session_state['start'] = "2019-12-01"
         
     st.session_state['start'] = st.date_input("Start Date: ")
     ANALv2.setStartDate(str(st.session_state['start']))
@@ -44,7 +44,7 @@ def app():
     
     
     if 'end' not in st.session_state:
-        st.session_state['end'] = "2022-01-01"
+        st.session_state['end'] = "2022-03-06"
     
     st.session_state['end'] = st.date_input("End Date: ")
 
@@ -67,7 +67,7 @@ def app():
     st.session_state['choice'] = st.radio("Choose a Dimension (default: video)", ['adType', 'ageGroup', 'asset',
                                    'audienceType', 'channel', 'claimedStatus',
                                    'contentOwner', 'country', 'day',
-                                   'deviceType', 'elapsedVideoTime',
+                                   'deviceType', 'elapsedVideoTimeRatio',
                                    'gender', 'insightPlaybackLocationDetail',
                                    'insightPlaybackLocationType',
                                    'insightTrafficSourceDetail',
@@ -97,7 +97,7 @@ def app():
                                             'annotationClosableImpressions', 'annotationClicks',
                                             'annotationCloses', 'cardClickRate', 'cardTeaserClickRate',
                                             'cardImpressions', 'cardTeaserImpressions', 'cardClicks', 
-                                            'cardTeaserClicks', 'subscribersGained', 'subscribersLost'
+                                            'cardTeaserClicks', 'subscribersGained', 'subscribersLost', 'relativeRetentionPerformance'
                                             ],['views', 'redViews', 'comments',
                                             'likes', 'dislikes', 'videosAddedToPlaylists',
                                             'videosRemovedFromPlaylists', 'shares', 
@@ -108,7 +108,7 @@ def app():
                                             'annotationClosableImpressions', 'annotationClicks',
                                             'annotationCloses', 'cardClickRate', 'cardTeaserClickRate',
                                             'cardImpressions', 'cardTeaserImpressions', 'cardClicks', 
-                                            'cardTeaserClicks', 'subscribersGained', 'subscribersLost'
+                                            'cardTeaserClicks', 'subscribersGained', 'subscribersLost', 'relativeRetentionPerformance'
                                             ])
         ANALv2.setMetrics(st.session_state['metrics'])
         
@@ -123,7 +123,7 @@ def app():
                                             'annotationClosableImpressions', 'annotationClicks',
                                             'annotationCloses', 'cardClickRate', 'cardTeaserClickRate',
                                             'cardImpressions', 'cardTeaserImpressions', 'cardClicks', 
-                                            'cardTeaserClicks', 'subscribersGained', 'subscribersLost'
+                                            'cardTeaserClicks', 'subscribersGained', 'subscribersLost', 'relativeRetentionPerformance'
                                             ], default=None)
         ANALv2.setMetrics(st.session_state['metrics'])
     if 'filter' not in st.session_state:
@@ -168,7 +168,7 @@ def app():
                     DATAv3.getStatistics()
                 
                     st.write("This is Total View Count:", DATAv3.total_viewCount)
-                    st.write("This is Total Suybscriber Count:", DATAv3.total_subscriberCount)
+                    st.write("This is Total Subscriber Count:", DATAv3.total_subscriberCount)
                     st.write("This is Total Video Count:", DATAv3.total_videoCount)
                     
                     DATAv3.getPlaylistID()
@@ -187,14 +187,22 @@ def app():
                 
                 if go_next_flag:
                     writer = pd.ExcelWriter(f"{DATAv3.channelName}.xlsx", engine="xlsxwriter")
-                    ll = []
+                    result = pd.DataFrame()
                     ANALv2.setChannelName(DATAv3.channelName)
-                    for i in DATAv3.videoIDList:
-                        # st.write("end " + ANALv2.endDate)
-                        # st.write("start " + ANALv2.startDate)
-                        # st.write("dimension " + ANALv2.dimensions)
-                        # st.write("metrics " + str(ANALv2.metrics))
-                        # st.write("filters" + " video==" + str(i))
+                    data = pd.read_excel('retention drew binsky.xlsx', skiprows=2)
+                    dd = pd.DataFrame(data)
+                    A = dd['Group A'].dropna().values.tolist()
+                    B = dd['Group B'].dropna().values.tolist()
+                    C = dd['Group C'].dropna().values.tolist()
+                    D = dd['Group D'].dropna().values.tolist()
+                    E = dd['Group E'].dropna().values.tolist()
+                    F = dd['Group F'].dropna().values.tolist()
+
+
+
+
+                    for i in F:
+
                         request = ANALv2.build.reports().query(
                             endDate = ANALv2.endDate,
                             startDate = ANALv2.startDate,
@@ -204,24 +212,32 @@ def app():
                             filters = "video=="+str(i)
                         )
                         response = request.execute()
-                        # st.write(response)
-                        # response=pd.json_normalize(response,'columnHeaders')
+
                        
                         columns = [i['name'] for i in response['columnHeaders']]
                         #add a videoID column in the front
                         if response['rows'] == []:
+                            st.write("passed")
                             pass
                         else:
                             df = pd.DataFrame(response["rows"])
                             df.columns = columns
-                            # df_curr = pd.DataFrame(response)
                             
+                            df.insert(0,'channelID', str(DATAv3.channelID))
                             df.insert(0,'videoID', str(i))
-                            df.to_excel(writer,sheet_name=str(i)[:30])
-                            ANALv2.downloadCSV(df, str(i))
-                        
+                            
+                            if result.empty:
+                                result = df
+                            else:
+                                
+                                result = pd.concat([result, df])
+                    # result.to_excel(writer,sheet_name=str(i)[:30])
+                    st.dataframe(result)
+                    # ANALv2.downloadCSV(result, str(DATAv3.channelName))
+                    st.download_button("CSV DOWNLOAD", data=result.to_csv().encode('utf-8'), file_name=(f'{DATAv3.channelName}_{datetime.now().strftime("%m.%d.%Y_%H:%M")}.csv'))
+
                         
                     
                         
-                    if st.download_button():
-                        writer.save()
+                    # if st.download_button():
+                    #     writer.save()

@@ -2,6 +2,7 @@ import os
 import argparse
 import time
 import configparser
+from argon2 import PasswordHasher
 from googleapiclient.discovery import build
 import generate_conf
 import re
@@ -87,6 +88,11 @@ class YouTubeAnalytics:
     def setIds(self, ids):
         self.ids = ids
     
+    def addRPM(self, df):
+        temp = df.copy()
+        temp['RPM'] = (temp['estimatedRevenue'] * 1000 / (temp['views']))
+        return temp
+    
     def downloadCSV(self, channelData, videoid):
         path = os.path.join(self.target_PATH, self.channelName)
         if os.path.isdir(path):
@@ -95,3 +101,22 @@ class YouTubeAnalytics:
             os.mkdir(path)
             return channelData.to_csv(f'{path}/{videoid}_{datetime.now().strftime("%m.%d.%Y_%H:%M")}.csv', index=False)
        
+    def getTopNVideoIDs(self,maxResults=5, metric=''):
+        
+        request = self.build.reports().query(
+            endDate = self.endDate,
+            startDate = self.startDate,
+            metrics = 'estimatedMinutesWatched',
+            ids = 'channel==MINE',
+            maxResults = maxResults,
+            sort = f'-{metric}',
+            dimensions = 'video'
+        )
+        response = request.execute()
+        
+            
+        return response
+    
+    def getTopNVideoIDs_DF(self, maxResults, df):
+        videoIDList=df.sort_values(by='views', ascending=False)[:maxResults]
+        return videoIDList
