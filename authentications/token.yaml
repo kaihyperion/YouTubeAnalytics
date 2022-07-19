@@ -1,0 +1,23 @@
+!!python/object/new:oauthlib.oauth2.rfc6749.tokens.OAuth2Token
+dictitems:
+  access_token: ya29.A0AVA9y1tB3xsgfu0uBlXA7SRn5pLhfKB-Bj5MQNkGcSdwnzDN8XLXE5BbDboDNMRw4-V7gy8XwkQ8Js806rbUatB3Pv-ycPS1fqvoc4oHmC8sUC8hEhdyfQ1kZLn1S23VYdqRHKrWgA20LgZYUv9IEYsTsee7YUNnWUtBVEFTQVRBU0ZRRTY1ZHI4Q2lPUXg0TlNhelU3ZkpXRmhkUmp0Zw0163
+  expires_at: 1658197857.208838
+  expires_in: 3599
+  refresh_token: 1//04b-5u6VCcLXgCgYIARAAGAQSNwF-L9IrfyvB_gKF_2mScExwuho9qV5rtpLVEfVkdUSXTPUpC5qdUch7QeuyznX_ur-k4ZPk0p8
+  scope:
+  - https://www.googleapis.com/auth/youtubepartner
+  - https://www.googleapis.com/auth/youtube
+  - https://www.googleapis.com/auth/yt-analytics.readonly
+  - https://www.googleapis.com/auth/yt-analytics-monetary.readonly
+  token_type: Bearer
+state:
+  _new_scope: !!set
+    https://www.googleapis.com/auth/youtube: null
+    https://www.googleapis.com/auth/youtubepartner: null
+    https://www.googleapis.com/auth/yt-analytics-monetary.readonly: null
+    https://www.googleapis.com/auth/yt-analytics.readonly: null
+  _old_scope: !!set
+    https://www.googleapis.com/auth/youtube: null
+    https://www.googleapis.com/auth/youtubepartner: null
+    https://www.googleapis.com/auth/yt-analytics-monetary.readonly: null
+    https://www.googleapis.com/auth/yt-analytics.readonly: null

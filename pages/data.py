@@ -11,7 +11,7 @@ def app():
     config = configparser.ConfigParser()
     config.read('conf.ini')
     SCOPE = list(config.get('SCOPE Settings', 'scopelist').split(', '))
-    auth = oauth.Authorize(scope = SCOPE, token_file = 'authentications/token.yaml', secrets_file = 'authentications/secret_kai.json')
+    auth = oauth.Authorize(scope = SCOPE, token_file = 'authentications/token.yaml', secrets_file = 'authentications/secret_ama2.json')
     auth.authorize()
     # auth.re_authorize()
     token = auth.load_token()
@@ -21,7 +21,7 @@ def app():
     #1) Call the api_build()
     DATAv3.api_build()
     
-    ### SEssion state
+    ### Session state
     if "ChannelName" not in st.session_state and 'ChannelID' not in st.session_state:
         st.session_state['ChannelName'] = None
         st.session_state['ChannelID'] = None
@@ -78,6 +78,7 @@ def app():
         DATAv3.setVideoDataList()
         DATAv3.videoDataParser()
         DATAv3.parseVideoLength()
-        df = DATAv3.createDF()
+        df = DATAv3.createDF_script2()
         st.dataframe(df)
+        df = df[df['length_in_seconds'] > 90]
         st.download_button("CSV DOWNLOAD", data=df.to_csv().encode('utf-8'), file_name=(f'{DATAv3.channelName}_{datetime.now().strftime("%m.%d.%Y_%H:%M")}.csv'))

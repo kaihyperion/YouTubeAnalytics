@@ -1,11 +1,14 @@
+from cmath import nan
 import os
 import argparse
 import time
 import configparser
 from googleapiclient.discovery import build
+from numpy import datetime64
 import generate_conf
 import re
 import pandas as pd
+import numpy as np
 import xlsxwriter
 from datetime import datetime
 config = configparser.ConfigParser()
@@ -118,6 +121,8 @@ class YouTubeData:
         response = self.build.channels().list(part = 'snippet, contentDetails, statistics',
                                    mine = True).execute()
         return response['items'][0]['id']
+    
+    
     def setChannelID(self, channelID):
         """Sets the channel ID
 
@@ -127,6 +132,7 @@ class YouTubeData:
         
         self.channelID = channelID
     
+
     
     
     def setChannelName(self, channelName):
@@ -159,8 +165,9 @@ class YouTubeData:
         response = self.response['items'][0]['statistics']
         
         # Sets the following class variables
+        print(response)
         self.total_viewCount = response['viewCount']
-        self.total_subscriberCount = response['subscriberCount']
+        # self.total_subscriberCount = response['subscriberCount']
         self.total_videoCount = response['videoCount']
         
 
@@ -227,8 +234,12 @@ class YouTubeData:
             self.publishedDate.append((self.videoList[count])['snippet']['publishedAt'])
             self.video_description.append((self.videoList[count])['snippet']['description'])
             self.videoIds.append(self.videoList[count]['snippet']['resourceId']['videoId'])
-            self.video_thumbnails.append(self.videoList[count]['snippet']['thumbnails']['high']['url'])
-            self.video_length.append(self.videoDataList[count]['contentDetails']['duration'])
+            self.video_thumbnails.append(self.videoList[count]['snippet']['thumbnails'])
+            try:
+                self.video_length.append(self.videoDataList[count]['contentDetails']['duration'])
+            except:
+                print(f"video length was not found")
+                self.video_length.append(int(0))
             try:
                 self.like_count.append(int((self.videoDataList[count])['statistics']['likeCount']))
             except:
@@ -237,7 +248,8 @@ class YouTubeData:
             try:
                 self.dislike_count.append(int((self.videoDataList[count])['statistics']['dislikeCount']))
             except:
-                print(f"Dislike count was not found")
+                # print(f"Dislike count was not found")
+                
                 self.dislike_count.append(int(0))
                 
             try:
@@ -256,9 +268,39 @@ class YouTubeData:
             
 
             count += 1
-        
-        
-        
+    def videoDataParser_script1(self):
+        for count in range(0, len(self.videoIDList)):
+            self.titles.append((self.videoList[count])['snippet']['title'])
+            # print((self.videoList[count])['snippet']['publishedAt'])
+            self.publishedDate.append((self.videoList[count])['snippet']['publishedAt'])
+            self.videoIds.append(self.videoList[count]['snippet']['resourceId']['videoId'])
+            try:
+                self.video_length.append(self.videoDataList[count]['contentDetails']['duration'])
+            except:
+                print(f"video length was not found")
+                self.video_length.append(int(0))
+            
+
+            count += 1
+
+
+    ### !!! This is possible that we might remove 1+ video that is not a short due to the fact that video length was not found
+    def videoDataParser_script4(self):
+        for count in range(0, len(self.videoIDList)):
+            # self.titles.append((self.videoList[count])['snippet']['title'])
+            # print((self.videoList[count])['snippet']['publishedAt'])
+            self.publishedDate.append(((self.videoList[count])['snippet']['publishedAt']).split('T')[0])
+            self.videoIds.append(self.videoList[count]['snippet']['resourceId']['videoId'])
+            try:
+                self.video_length.append(self.videoDataList[count]['contentDetails']['duration'])
+            except:
+                print(f"video length was not found")
+                self.video_length.append(int(0))
+            
+
+            count += 1
+            
+            
     def parseISO8601(self, duration):
         regex= re.compile(r'PT((\d{1,3})H)?((\d{1,3})M)?((\d{1,2})S)?')
         
@@ -295,6 +337,8 @@ class YouTubeData:
             self.video_length[i] = time.strftime('%H:%M:%S', time.gmtime(seconds))
     
     
+    
+    
     def createDF(self):
         """Create DataFrame
         """
@@ -308,11 +352,156 @@ class YouTubeData:
                 'views':self.views,
                 'comment':self.comment_count,
                 'video_length':self.video_length,
+                'length_in_seconds':self.seconds_list
+                # 'thumbnail':self.video_thumbnails
+                }
+        return pd.DataFrame(data)
+    
+    
+    def createDF_script4(self):
+        data = {'publishedDate': self.publishedDate,
+                'videoIDs': self.videoIds,
+                'length_in_seconds':self.seconds_list
+                }
+        df = pd.DataFrame(data)
+        df = df[df['length_in_seconds'] > 60]
+        
+        return df
+    def createDF_script2(self):
+        data = {'videoIDs': self.videoIds,
+                'videoTitle': self.titles,
+                'video_length': self.video_length,
                 'length_in_seconds':self.seconds_list,
-                'thumbnail':self.video_thumbnails}
+                'publishedDate': self.publishedDate,
+                'views': self.views
+                }
         return pd.DataFrame(data)
         
+    
+    
+    def gap_calculator(self, df):
+        count = 0
+        print("gap calculator")
+        for i in range(len(df['gap'])):
+            if df['gap'][i] == False:
+                df['gap'][i] = count
+                if i+1 < len(df['gap']):
+                    if df['date'][i+1] == df['date'][i]:
+                        pass
+                    else:
+                        count = 0
+            else:
+                count += 1
         
+        return df
+    
+    def gap_calculator2(self, df):
+        df['gap_days'] = 0
+        count = 0
+        for i in range(len(df['gap'])):
+            if df['gap'][i] == False:
+                df['gap_days'][i] = 0
+                count = 0
+            else:
+                count += 1
+                df['gap_days'][i] = count
+        return df
+    
+    
+    def createDF_script1_shorts(self):
+        data = {
+            'publishedDate': self.publishedDate,
+            'length_in_seconds':self.seconds_list
+            }
+        df = pd.DataFrame(data)
+        
+        # first get rid of shorts
+        df = df.loc[df['length_in_seconds'] <= 60]
+        dates = [i.split('T')[0] for i in df['publishedDate'].to_list()]
+        timestamps = [pd.Timestamp(i) for i in dates]
+        gaps = [int(0) for i in range(len(timestamps))]
+        series = pd.Series(gaps, index=timestamps)
+        s = pd.Series(index=pd.date_range(series.index.min(), 
+                                          series.index.max(), 
+                                          freq='D').difference(series.index))
+        s= s.fillna(1.0)
+        result = pd.concat([series, s]).sort_index()
+        print("sorting complete")
+        result = result.fillna(False)
+        result = result.astype(bool)
+        final = pd.DataFrame({'date':result.index, 'gap':result.values})
+        print("created dataframe")
+        # final = result.to_frame()
+        # final = final.rename(columns = {0:'item'})
+        # # final = result.astype(bool)
+        # # final = pd.DataFrame(result.astype(bool))
+        # print(type(final))
+        # print(f"This is column names: {final.columns}")
+        really_final = self.gap_calculator2(final)
+        print(really_final.columns)
+        return really_final.astype(str)
+    
+    
+    def createDF_script1(self):
+        data = {
+                'publishedDate': self.publishedDate,
+                'length_in_seconds':self.seconds_list
+                }
+        df = pd.DataFrame(data)
+        
+        # first get rid of shorts
+        df = df.loc[df['length_in_seconds'] > 60]
+        dates = [i.split('T')[0] for i in df['publishedDate'].to_list()]
+        timestamps = [pd.Timestamp(i) for i in dates]
+        gaps = [int(0) for i in range(len(timestamps))]
+        series = pd.Series(gaps, index=timestamps)
+        s = pd.Series(index=pd.date_range(series.index.min(),
+                                          series.index.max(), 
+                                          freq='D').difference(series.index))
+        s= s.fillna(1.0)
+        result = pd.concat([series, s]).sort_index()
+        print("sorting complete")
+        result = result.fillna(False)
+        result = result.astype(bool)
+        final = pd.DataFrame({'date':result.index, 'gap':result.values})
+        print("created dataframe")
+        # final = result.to_frame()
+        # final = final.rename(columns = {0:'item'})
+        # # final = result.astype(bool)
+        # # final = pd.DataFrame(result.astype(bool))
+        # print(type(final))
+        # print(f"This is column names: {final.columns}")
+        really_final = self.gap_calculator2(final)
+        print(really_final.columns)
+        return really_final.astype(str)
+        return pd.DataFrame(pd.concat([series, s]).sort_index())
+        df2 = pd.DataFrame()
+        
+        
+        return df
+        # df['publishedDate']= pd.to_datetime(df['publishedDate'])
+
+        print(pd.to_datetime(df['publishedDate'].min()).strftime('%Y-%m-%d'))
+        # print(df['publishedDate'].min().astype(datetime64))
+        r = pd.date_range(start=pd.to_datetime(df['publishedDate'].min()).strftime('%Y-%m-%d'), end=pd.to_datetime(df['publishedDate'].max()).strftime('%Y-%m-%d'))
+        print(r.strftime('%Y-%m-%d'))
+        print(df['publishedDate'])
+        r = r.strftime('%Y-%m-%d')
+        # return df.set_index('publishedDate').reindex(r).fillna(0.0).rename_axis('publishedDates').reset_index()
+        # idx = pd.period_range(start=df['publishedDate'].min(), end=df['publishedDate'].max())
+        # return df.reindex(r).fillna(0).rename_axis('publishedDates').reset_index()
+        print(pd.DatetimeIndex(df['publishedDate']))
+        return df.set_index(pd.DatetimeIndex(df['publishedDate']))
+        # return df.reindex(r, fill_value=0)
+        # df.index = pd.DatetimeIndex(df.index)
+        # df = df.reindex(pd.date_range('09-01-2020','09-01-2018'), fill_value=0)
+        # df['publishedDate'] = pd.to_datetime(df['publishedDate'], format = '%Y-%m-%d')
+        # df = df.sort_values(by='publishedDate')
+        # df.set_index('publishedDate', inplace=True)
+        # df = df.resample('D').ffill().reset_index()
+        
+    
+    
         
     def downloadCSV(self):
         channelData = self.createDF()
@@ -337,4 +526,48 @@ class YouTubeData:
         # if there is not a folder named
       
     
+    def TTS_converter(self,df):
+        # Time (HH:MM:SS) to Seconds (s) converter
+        
+        
+        for i in range(len(df['video_length'])):
+            
+            secs = sum(int(x) * 60 ** i for i, x in enumerate(reversed(df['video_length'][i].split(':'))))
+            df.loc[i, 'length_in_seconds'] = secs
+
+        return df
     
+    ####
+    # Short Remover:
+    # This removes all the shorts
+    def short_remover(self,df):
+        # there must be a column with seconds (called video_length)
+        if 'length_in_seconds' in df:
+            filtered_result = df.loc[df['length_in_seconds'] > 60].reset_index(drop=True)
+            
+        else:
+            df = self.TTS_converter(df)
+            filtered_result = df.loc[df['length_in_seconds'] > 60].reset_index(drop=True)
+            
+            
+        return filtered_result
+
+
+
+    def video_length_classifier(self, df):
+        
+        # First time to seconds convert
+        df = self.TTS_converter(df) 
+        
+        q_array = pd.qcut(df['length_in_seconds'].astype('int'), 
+                                  3, retbins=True)
+        #takes in dataframe of public pull and classify into 3 quantiles
+        length_category = pd.qcut(df['length_in_seconds'].astype('int'), 
+                                  3, 
+                                  labels=['short', 'medium', 'long'])
+        
+        # add the appropriate length category into the original DataFrame
+        df['video_length_category'] = length_category
+        
+        return df, q_array[1]
+        
