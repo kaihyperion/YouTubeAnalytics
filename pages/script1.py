@@ -10,10 +10,20 @@ import pandas as pd
 from datetime import datetime
 import random
 import time
-import string 
+import string
+
+
+"""
+THINGS TO NOTE:
+- Try to find a way to group the big dataframe all together and display it in a singular table
+- Try and except
+""" 
 
 def app():
-    st.title("script 1")
+    st.title("Posting Gap Analysis (Day of Week)")
+    with st.expander("Details regarding this option"):
+        st.write("This allows (private) users to view Posting Gap Analysis of their channel. There are Days of Week Analysis as well.")
+    
     config = configparser.ConfigParser()
     config.read('conf.ini')
     SCOPE = list(config.get('SCOPE Settings', 'scopelist').split(', '))
@@ -65,9 +75,9 @@ def app():
     
     date_and_gap_shorts = DATAv3.createDF_script1_shorts()
     #df holds the date and gap 
-    st.write(date_and_gap)
+    # st.write(date_and_gap)
     
-    st.download_button("CSV DOWNLOAD", data=date_and_gap.to_csv().encode('utf-8'), file_name=(f'mock_{datetime.now().strftime("%m.%d.%Y_%H:%M")}.csv'))
+    # st.download_button("CSV DOWNLOAD", data=date_and_gap.to_csv().encode('utf-8'), file_name=(f'mock_{datetime.now().strftime("%m.%d.%Y_%H:%M")}.csv'))
 
     ############################
     """Retrieving data
@@ -85,17 +95,17 @@ def app():
         metrics = 'views'
     )
     response = request.execute()
-    st.write(response)
+    # st.write(response)
     columns = [i['name'] for i in response['columnHeaders']]
     if response['rows'] == []:
-        st.write("passed")
+        # st.write("passed")
         pass
     else:
         df = pd.DataFrame(response["rows"])
         df.columns = columns
         
 
-    st.dataframe(df)
+    # st.dataframe(df)
     
     ####
     # Creating Day name
@@ -103,7 +113,7 @@ def app():
     df['DOW'] = day
     cats = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     
-    st.dataframe(df)
+    # st.dataframe(df)
     df.rename(columns = {'day' : 'date'}, inplace = True)
 
     ### DOW AGGREAGATE
@@ -117,28 +127,26 @@ def app():
     shorts['DOW'] = pd.Categorical(shorts['DOW'], categories=cats, ordered=True)
     search = df[df['insightTrafficSourceType'] == "YT_SEARCH"]
     search['DOW'] = pd.Categorical(search['DOW'], categories=cats, ordered=True)
-    st.title("Days of Week Analysis on Content Types")
-    col1, col2 = st.columns(2)
-    col3, col4 = st.columns(2)
-    col1.subheader('Browse')
-    col2.subheader('Suggested')
-    col3.subheader('Shorts')
-    col4.subheader('Search')
-    col1.dataframe(browse.groupby('DOW')['views'].mean())
-    col2.dataframe(suggested.groupby('DOW')['views'].mean())
-    col3.dataframe(shorts.groupby('DOW')['views'].mean())
-    col4.dataframe(search.groupby('DOW')['views'].mean())
+    
+    tab1, tab2, tab3 = st.tabs(["📅DOW", " 📈Posting Gap Analysis", "📊Posting Gap Analysis (Shorts)"])
+    with tab1:
+        tab1.subheader("Days of Week Analysis on Content Types")
+        col1, col2, col3, col4 = tab1.columns(4)
+        
+        col1.subheader('Browse')
+        col2.subheader('Suggested')
+        col3.subheader('Shorts')
+        col4.subheader('Search')
+        col1.dataframe(browse.groupby('DOW')['views'].mean())
+        col2.dataframe(suggested.groupby('DOW')['views'].mean())
+        col3.dataframe(shorts.groupby('DOW')['views'].mean())
+        col4.dataframe(search.groupby('DOW')['views'].mean())
     
     
     
     
     #####
     # Posting GAPS
-    # st.dataframe(df)
-    # st.download_button("CSV DOWNLOAD", data=df.to_csv().encode('utf-8'), file_name=(f'mock_{datetime.now().strftime("%m.%d.%Y_%H:%M")}.csv'))
-
-    # st.dataframe(date_and_gap)
-    # st.download_button("CSV DOWNLOAD2", data=date_and_gap.to_csv().encode('utf-8'), file_name=(f'mock_{datetime.now().strftime("%m.%d.%Y_%H:%M")}.csv'))
 
     df.rename(columns = {'day' : 'date'}, inplace = True)
     df_copy = df
@@ -148,20 +156,22 @@ def app():
     postingGap_shorts = df[df['insightTrafficSourceType'] == 'SHORTS']
     postingGap_search = df[df['insightTrafficSourceType'] == 'YT_SEARCH']
 
-    st.title("Posting Gap Average analysis")
-    st.write("OVERALL")
-    st.dataframe(df.groupby('gap_days')['views'].mean())
-    col1, col2 = st.columns(2)
-    col3, col4 = st.columns(2)
-    col1.subheader('Browse')
-    col2.subheader('Suggested')
-    col3.subheader('Shorts')
-    col4.subheader('Search')
-    col1.dataframe(postingGap_browse.groupby('gap_days')['views'].mean())
-    col2.dataframe(postingGap_suggested.groupby('gap_days')['views'].mean())
-    col3.dataframe(postingGap_shorts.groupby('gap_days')['views'].mean())
-    col4.dataframe(postingGap_search.groupby('gap_days')['views'].mean())
-    
+    with tab2:
+        tab2.subheader("Posting Gap Average analysis")
+        col0, col1, col2, col3, col4 = tab2.columns(5)
+
+        col0.subheader("OVERALL")
+        col1.subheader('Browse')
+        col2.subheader('Suggested')
+        col3.subheader('Shorts')
+        col4.subheader('Search')
+        
+        col0.dataframe(df.groupby('gap_days')['views'].mean())
+        col1.dataframe(postingGap_browse.groupby('gap_days')['views'].mean())
+        col2.dataframe(postingGap_suggested.groupby('gap_days')['views'].mean())
+        col3.dataframe(postingGap_shorts.groupby('gap_days')['views'].mean())
+        col4.dataframe(postingGap_search.groupby('gap_days')['views'].mean())
+        
     
     
     #######
@@ -172,18 +182,20 @@ def app():
     postingGap_shorts = df[df['insightTrafficSourceType'] == 'SHORTS']
     postingGap_search = df[df['insightTrafficSourceType'] == 'YT_SEARCH']
 
-    st.title("SHORTS Posting Gap Average analysis")
-    st.write("OVERALL")
-    st.dataframe(df.groupby('gap_days')['views'].mean())
-    col1, col2 = st.columns(2)
-    col3, col4 = st.columns(2)
-    col1.subheader('Browse')
-    col2.subheader('Suggested')
-    col3.subheader('Shorts')
-    col4.subheader('Search')
-    col1.dataframe(postingGap_browse.groupby('gap_days')['views'].mean())
-    col2.dataframe(postingGap_suggested.groupby('gap_days')['views'].mean())
-    col3.dataframe(postingGap_shorts.groupby('gap_days')['views'].mean())
-    col4.dataframe(postingGap_search.groupby('gap_days')['views'].mean())
-    
+    with tab3:
+        tab3.subheader("SHORTS Posting Gap Average analysis")
+
+        col0, col1, col2, col3, col4 = tab3.columns(5)
+
+        col0.subheader("OVERALL")
+        col1.subheader('Browse')
+        col2.subheader('Suggested')
+        col3.subheader('Shorts')
+        col4.subheader('Search')
+        col0.dataframe(df.groupby('gap_days')['views'].mean())
+        col1.dataframe(postingGap_browse.groupby('gap_days')['views'].mean())
+        col2.dataframe(postingGap_suggested.groupby('gap_days')['views'].mean())
+        col3.dataframe(postingGap_shorts.groupby('gap_days')['views'].mean())
+        col4.dataframe(postingGap_search.groupby('gap_days')['views'].mean())
+        
     

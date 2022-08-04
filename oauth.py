@@ -66,7 +66,6 @@ class Authorize:
             dump(token, stream, Dumper = Dumper)
         os.chmod(self.token_file, 0o600)
     def re_authorize(self):
-        print(self.scope)
         self.session = OAuth2Session(self.client_id, scope=self.scope,
                                         redirect_uri = self.redirect_uri,
                                         auto_refresh_url = self.token_uri,
@@ -84,12 +83,16 @@ class Authorize:
             response_code = st.text_input("Paste the response token: ")
             token_submit = st.form_submit_button('Submit Token')
         # response_code = input('Paste the response token: ')
-        if token_submit:
-            st.write("Token Submitted!")
-            self.token = self.session.fetch_token(
-                self.token_uri, client_secret = self.client_secret,
-                code = response_code)
-            self.save_token(self.token)
+            if token_submit:
+                st.write("Token Submitted!")
+                self.token = self.session.fetch_token(
+                    self.token_uri, client_secret = self.client_secret,
+                    code = response_code)
+                self.save_token(self.token)
+                print("WOWOWOWOWOW")
+        
+            
+            
         
     def authorize(self):
         token = self.load_token()
