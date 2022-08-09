@@ -57,7 +57,7 @@ def app():
     elif inputChannelID:
         DATAv3.setChannelID(inputChannelID)
         st.session_state['ChannelID'] = inputChannelID
-    st.write(st.session_state)
+    # st.write(st.session_state)
     
     #4) Get Channel Response on statistics
     if st.session_state['ChannelID']:

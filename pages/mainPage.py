@@ -4,9 +4,13 @@ from datetime import datetime, timedelta
 import oauth
 import configparser
 import youtubeData
+from PIL import Image
 
 def app():
-    st.title("AMA YouTube Data Extraction Tool")
+    image = Image.open('images/logo.png')
+    st.image(image)
+    st.title("YouTube Data Extraction Tool")
+    
     
     # Check the token expire time
     with open('authentications/token.yaml', 'r') as stream:
@@ -14,6 +18,14 @@ def app():
         token_expiry = token['expires_at']
     
     # Now convert the token_expiry to the datetime
+    
+
+
+    # st.write(st.session_state)
+    # if st.session_state['flag']:
+    #     print(st.session_state['flag'])
+    # else:
+    #     print("noithing")
     token_expiry_datetime = datetime.fromtimestamp(token_expiry)
     now = datetime.now()
     config = configparser.ConfigParser()
@@ -21,22 +33,34 @@ def app():
     SCOPE = list(config.get('SCOPE Settings', 'scopelist').split(', '))
 
     auth = oauth.Authorize(scope = SCOPE, token_file= 'authentications/token.yaml', secrets_file = 'authentications/secret_ama2.json')
+    st.session_state['flag'] = "Hi"
     st.write(f"Now: {now}")
     st.write(f"Token Expire: {token_expiry_datetime}")
-    account_change_button = st.button('Change Account')
+    refresh_btn = st.button("token refresh")
+    if refresh_btn:
+        auth.token_Refresh()
+        st.experimental_rerun()
+    # account_change_button = st.button('Change Account', on_click=auth.re_authorize())
+    # def new_account():
+    #     auth.authorize()
+    #     token = auth.load_token()
+    #     credentials = auth.get_credentials()
+    #     return credentials
     # for the token to be valid, now has to be (<) token_expiry
-    if now < token_expiry_datetime:
+    
+    if datetime.now() < token_expiry_datetime:
         # since it is valid, we can just authenticate
         st.header("Your Token is still Valid!")
-        if account_change_button:
-            st.write("Re authorize triggered")
-            auth.re_authorize()
-        pass
+        
+    
     else: # if the token is invalid, we must reauthenticate
-         st.header("Your Token Expired:")
-         auth.re_authorize()
+        st.header("Your Token Expired:")
+        auth.re_authorize()
     
     
+    if st.button("change account"):
+        auth.re_authorize()
+        st.header("Changed")
 
         # credentials = auth.get_credentials()
         # DATAv3 = youtubeData.YouTubeData(credentials)
