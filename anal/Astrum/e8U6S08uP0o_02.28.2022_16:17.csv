@@ -1,7 +1,0 @@
-day,views,redViews,comments,likes,dislikes,videosAddedToPlaylists,videosRemovedFromPlaylists,shares,estimatedMinutesWatched,estimatedRedMinutesWatched,averageViewDuration,averageViewPercentage,annotationClickThroughRate,annotationCloseRate,annotationImpressions,annotationClickableImpressions,annotationClosableImpressions,annotationClicks,annotationCloses,cardClickRate,cardTeaserClickRate,cardImpressions,cardTeaserImpressions,cardClicks,cardTeaserClicks,subscribersGained,subscribersLost
-2022-02-21,45131,8411,118,3834,34,3110,517,126,301068,63139,400,58.599999999999994,0,0,0,0,0,0,0,0.0385,0.0011,78,20157,3,23,94,13
-2022-02-22,31091,5447,58,1954,22,1239,527,76,191654,40063,369,54.15,0,0,0,0,0,0,0,0.09519999999999999,0.0006,21,12153,2,7,71,18
-2022-02-23,20787,3136,12,838,14,667,339,54,105735,21506,305,44.68,0,0,0,0,0,0,0,0.0,0.0003,6,6382,0,2,55,8
-2022-02-24,21515,2109,21,502,10,455,211,31,67025,12384,186,27.37,0,0,0,0,0,0,0,0.2,0.001,10,3851,2,4,40,4
-2022-02-25,10502,1500,6,391,3,312,173,27,47110,9620,269,39.41,0,0,0,0,0,0,0,0.0,0.0007000000000000001,6,2888,0,2,37,2
-2022-02-26,6918,1075,10,284,2,227,158,15,33818,6718,293,42.94,0,0,0,0,0,0,0,0.0,0.0005,3,1868,0,1,19,3
