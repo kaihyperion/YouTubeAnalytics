@@ -88,10 +88,26 @@ class Authorize:
                 self.token = self.session.fetch_token(
                     self.token_uri, client_secret = self.client_secret,
                     code = response_code)
+                
+                st.write(self.token)
                 self.save_token(self.token)
-                print("WOWOWOWOWOW")
+                
+                #Save it into Streamlit session rather than file
+                st.session_state['user_token'] = self.token
+                
         
-            
+    def token_Refresh(self):
+        tok=self.load_token()
+        st.write(self.token_uri)
+        self.session = OAuth2Session(self.client_id, token= tok,
+                                     auto_refresh_url=self.token_uri,
+                                     auto_refresh_kwargs=self.extra,
+                                     token_updater = self.save_token)
+        
+        new_token = self.session.refresh_token(self.token_uri, refresh_token=tok['refresh_token'])
+        self.save_token(new_token)
+        
+        
             
         
     def authorize(self):

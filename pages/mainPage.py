@@ -21,8 +21,11 @@ def app():
     
 
 
-    
-        
+    # st.write(st.session_state)
+    # if st.session_state['flag']:
+    #     print(st.session_state['flag'])
+    # else:
+    #     print("noithing")
     token_expiry_datetime = datetime.fromtimestamp(token_expiry)
     now = datetime.now()
     config = configparser.ConfigParser()
@@ -30,8 +33,13 @@ def app():
     SCOPE = list(config.get('SCOPE Settings', 'scopelist').split(', '))
 
     auth = oauth.Authorize(scope = SCOPE, token_file= 'authentications/token.yaml', secrets_file = 'authentications/secret_ama2.json')
+    st.session_state['flag'] = "Hi"
     st.write(f"Now: {now}")
     st.write(f"Token Expire: {token_expiry_datetime}")
+    refresh_btn = st.button("token refresh")
+    if refresh_btn:
+        auth.token_Refresh()
+        st.experimental_rerun()
     # account_change_button = st.button('Change Account', on_click=auth.re_authorize())
     # def new_account():
     #     auth.authorize()
