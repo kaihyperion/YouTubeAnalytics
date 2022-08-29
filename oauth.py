@@ -77,7 +77,8 @@ class Authorize:
             access_type="offline",
             prompt="select_account")
         
-        st.write("Please click the link and authorize: ", authorization_url)
+        with st.expander("Please Click the Link and Authorize"):
+            st.write("Please click the link: ", authorization_url)
         with st.form("token_form"):
             
             response_code = st.text_input("Paste the response token: ")
@@ -89,7 +90,7 @@ class Authorize:
                     self.token_uri, client_secret = self.client_secret,
                     code = response_code)
                 
-                st.write(self.token)
+                # st.write(self.token)
                 self.save_token(self.token)
                 
                 #Save it into Streamlit session rather than file
@@ -132,14 +133,15 @@ class Authorize:
                 authorization_base_url,
                 access_type="offline",
                 prompt="select_account")
-            print("Please click the link and authorize: ", authorization_url)
+            with st.expander("Please Click the Link and Authorize:"):
+                print("Please click the link and authorize: ", authorization_url)
             
-            response_code = input('Paste the response token: ')
+                response_code = input('Paste the response token: ')
             
-            self.token = self.session.fetch_token(
-                self.token_uri, client_secret = self.client_secret,
-                code = response_code)
-            self.save_token(self.token)
+                self.token = self.session.fetch_token(
+                    self.token_uri, client_secret = self.client_secret,
+                    code = response_code)
+                self.save_token(self.token)
             
         
         retries = Retry(total = 3,

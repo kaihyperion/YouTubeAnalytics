@@ -6,7 +6,9 @@ from argon2 import PasswordHasher
 from googleapiclient.discovery import build
 import generate_conf
 import re
+import numpy as np
 from datetime import datetime
+import streamlit as st
 class YouTubeAnalytics:
     """
     YouTube Analytics API
@@ -90,7 +92,10 @@ class YouTubeAnalytics:
     
     def addRPM(self, df):
         temp = df.copy()
+        st.dataframe(temp)
         temp['RPM'] = (temp['estimatedRevenue'] * 1000 / (temp['views']))
+        temp['RPM'][np.isinf(temp['RPM'])] = 0
+        st.dataframe(temp)
         return temp
     
     def downloadCSV(self, channelData, videoid):

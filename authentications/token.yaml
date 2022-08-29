@@ -1,19 +1,23 @@
 !!python/object/new:oauthlib.oauth2.rfc6749.tokens.OAuth2Token
 dictitems:
-  access_token: ya29.A0AVA9y1t08KN_9__J4L-JDxHSz97s5CpfihDS502DmDJpSk4ozpmiHYKzTdNU0ICQ1lJaIZ0ZBcOg88WJHsOn_3Dhhx2dXbOHy9709GiCjOf__XwMSNsfooXxjMv7kGaWesSBFsY8m5y4r3DbDDtGTPyUzNF3aCgYKATASATASFQE65dr8XDpbnA6tQdDS1WzdKTUMwA0163
-  expires_at: 1660087407.349191
+  access_token: ya29.a0AVA9y1tbojglreuBce36pAX7wo-cqaobL4WewRa0slJTQ5caEfNG_3CNtQ0wiBolToG-mOzdMjxIYnLhwbzc63al2Qm0f6Z6s1YedlZR6Um2c_ENmQLEaoXhEYbbtboKu86rR-Ok-dQPMFIFVSjazPMaRyMaaCgYKATASAQASFQE65dr8Qqof7XCFyZFMFwFTL1_aHQ0163
+  expires_at: 1661743680.3781452
   expires_in: 3599
-  refresh_token: 1//04n4WOyHs1FKACgYIARAAGAQSNwF-L9IrVGH0vOngTDzAvOQeWyPrlWxO2WTuYHm7ejdMfh62LZlqbqJ-t8XA0TjTfuWTMmQ0JE4
+  refresh_token: 1//04l2eFL21nQspCgYIARAAGAQSNwF-L9IrH48wWOUH-ngwh7r-ngy-sfYomOkdPO3toEDQA1oJKsZN_T-My7i0Q4M7erqjBziffvg
   scope:
-  - https://www.googleapis.com/auth/yt-analytics.readonly
-  - https://www.googleapis.com/auth/yt-analytics-monetary.readonly
   - https://www.googleapis.com/auth/youtubepartner
+  - https://www.googleapis.com/auth/yt-analytics.readonly
   - https://www.googleapis.com/auth/youtube
+  - https://www.googleapis.com/auth/yt-analytics-monetary.readonly
   token_type: Bearer
 state:
-  _new_scope: &id001 !!set
+  _new_scope: !!set
     https://www.googleapis.com/auth/youtube: null
     https://www.googleapis.com/auth/youtubepartner: null
     https://www.googleapis.com/auth/yt-analytics-monetary.readonly: null
     https://www.googleapis.com/auth/yt-analytics.readonly: null
-  _old_scope: *id001
+  _old_scope: !!set
+    https://www.googleapis.com/auth/youtube: null
+    https://www.googleapis.com/auth/youtubepartner: null
+    https://www.googleapis.com/auth/yt-analytics-monetary.readonly: null
+    https://www.googleapis.com/auth/yt-analytics.readonly: null
