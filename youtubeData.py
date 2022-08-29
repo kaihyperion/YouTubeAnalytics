@@ -220,52 +220,60 @@ class YouTubeData:
         
         for i in range(0, len(self.videoIDList), 40):
             
-            tmp = self.build.videos().list(id= ','.join(self.videoIDList[i:i+40]), part= 'statistics, contentDetails').execute()
+            tmp = self.build.videos().list(id= ','.join(self.videoIDList[i:i+40]), part= 'statistics, contentDetails, status').execute()
             info_video += tmp['items']
             
         self.videoDataList = info_video
+        print(self.videoDataList)
         
         
         
     
     def videoDataParser(self):
-        for count in range(0, len(self.videoIDList)):
-            self.titles.append((self.videoList[count])['snippet']['title'])
-            self.publishedDate.append((self.videoList[count])['snippet']['publishedAt'])
-            self.video_description.append((self.videoList[count])['snippet']['description'])
-            self.videoIds.append(self.videoList[count]['snippet']['resourceId']['videoId'])
-            self.video_thumbnails.append(self.videoList[count]['snippet']['thumbnails'])
-            try:
-                self.video_length.append(self.videoDataList[count]['contentDetails']['duration'])
-            except:
-                print(f"video length was not found")
-                self.video_length.append(int(0))
-            try:
-                self.like_count.append(int((self.videoDataList[count])['statistics']['likeCount']))
-            except:
-                print(f"Like count was not found")
-                self.like_count.append(int(0))
-            try:
-                self.dislike_count.append(int((self.videoDataList[count])['statistics']['dislikeCount']))
-            except:
-                # print(f"Dislike count was not found")
-                
-                self.dislike_count.append(int(0))
-                
-            try:
-                self.views.append(int((self.videoDataList[count])['statistics']['viewCount']))
-            except:
-                print(f"View count was not found")
-                self.views.append(int(0))
-                
-            try:
-                
-                self.comment_count.append(int((self.videoDataList[count])['statistics']['commentCount']))
-                
-            except:
-                print("comment count was not found")
-                self.comment_count.append(int(0))
+        #!!! i dont know why the videoIDList is 1 number higher than videodatalist...
+        for count in range(0, len(self.videoIDList)-1):
             
+            
+            if self.videoDataList[count]['status']['privacyStatus'] == 'public':
+                self.titles.append((self.videoList[count])['snippet']['title'])
+                self.publishedDate.append((self.videoList[count])['snippet']['publishedAt'])
+                self.video_description.append((self.videoList[count])['snippet']['description'])
+                self.videoIds.append(self.videoList[count]['snippet']['resourceId']['videoId'])
+                try:
+                    self.video_thumbnails.append(self.videoList[count]['snippet']['thumbnails']['default']['url'])
+                except:
+                    self.video_thumbnails.append('')
+                try:
+                    self.video_length.append(self.videoDataList[count]['contentDetails']['duration'])
+                except:
+                    print(f"video length was not found")
+                    self.video_length.append(int(0))
+                try:
+                    self.like_count.append(int((self.videoDataList[count])['statistics']['likeCount']))
+                except:
+                    print(f"Like count was not found")
+                    self.like_count.append(int(0))
+                try:
+                    self.dislike_count.append(int((self.videoDataList[count])['statistics']['dislikeCount']))
+                except:
+                    # print(f"Dislike count was not found")
+                    
+                    self.dislike_count.append(int(0))
+                    
+                try:
+                    self.views.append(int((self.videoDataList[count])['statistics']['viewCount']))
+                except:
+                    print(f"View count was not found")
+                    self.views.append(int(0))
+                    
+                try:
+                    
+                    self.comment_count.append(int((self.videoDataList[count])['statistics']['commentCount']))
+                    
+                except:
+                    print("comment count was not found")
+                    self.comment_count.append(int(0))
+                
 
             count += 1
     def videoDataParser_script1(self):
@@ -373,7 +381,8 @@ class YouTubeData:
                 'video_length': self.video_length,
                 'length_in_seconds':self.seconds_list,
                 'publishedDate': self.publishedDate,
-                'views': self.views
+                'views': self.views,
+                'thumbnail': self.video_thumbnails
                 }
         return pd.DataFrame(data)
         
@@ -381,7 +390,7 @@ class YouTubeData:
     
     def gap_calculator(self, df):
         count = 0
-        print("gap calculator")
+        # print("gap calculator")
         for i in range(len(df['gap'])):
             if df['gap'][i] == False:
                 df['gap'][i] = count
@@ -426,11 +435,11 @@ class YouTubeData:
                                           freq='D').difference(series.index))
         s= s.fillna(1.0)
         result = pd.concat([series, s]).sort_index()
-        print("sorting complete")
+        # print("sorting complete")
         result = result.fillna(False)
         result = result.astype(bool)
         final = pd.DataFrame({'date':result.index, 'gap':result.values})
-        print("created dataframe")
+        # print("created dataframe")
         # final = result.to_frame()
         # final = final.rename(columns = {0:'item'})
         # # final = result.astype(bool)
@@ -438,7 +447,7 @@ class YouTubeData:
         # print(type(final))
         # print(f"This is column names: {final.columns}")
         really_final = self.gap_calculator2(final)
-        print(really_final.columns)
+        # print(really_final.columns)
         return really_final.astype(str)
     
     
@@ -460,11 +469,11 @@ class YouTubeData:
                                           freq='D').difference(series.index))
         s= s.fillna(1.0)
         result = pd.concat([series, s]).sort_index()
-        print("sorting complete")
+        # print("sorting complete")
         result = result.fillna(False)
         result = result.astype(bool)
         final = pd.DataFrame({'date':result.index, 'gap':result.values})
-        print("created dataframe")
+        # print("created dataframe")
         # final = result.to_frame()
         # final = final.rename(columns = {0:'item'})
         # # final = result.astype(bool)
@@ -472,7 +481,7 @@ class YouTubeData:
         # print(type(final))
         # print(f"This is column names: {final.columns}")
         really_final = self.gap_calculator2(final)
-        print(really_final.columns)
+        # print(really_final.columns)
         return really_final.astype(str)
         return pd.DataFrame(pd.concat([series, s]).sort_index())
         df2 = pd.DataFrame()
