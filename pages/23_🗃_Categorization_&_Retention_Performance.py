@@ -16,6 +16,7 @@ import altair as alt
 import math
 import plotly.express as px
 import plotly.graph_objects as go
+import timeit
 
 
 
@@ -76,7 +77,7 @@ if 'csv' not in st.session_state:
         
 if 'csv' in st.session_state:
     with st.form('user_options'):
-        st.write("User Options to run")
+        
         
         category_choice = st.multiselect(label = 'Choose how you would like to CATEGORIZE the data:',
                                         options=['length', 'content_type'])
@@ -195,16 +196,21 @@ if 'csv' in st.session_state:
         )
         # st.subheader("request made | calling api")
         response = request.execute()
+        
         a = pd.json_normalize(response, 'rows')
         
-        # st.write(response)
+        if a.empty:
+            st.write("No data found")
+            st.stop()
+        
         st.write(f"time taken: {time.time() - startTime}")
         
         
-        columns = [i['name'] for i in response['columnHeaders']]
+        a.columns = [i['name'] for i in response['columnHeaders']]
         # st.write(f"columns are {columns}")
+        st.dataframe(a)
         
-        a.columns = columns
+        # a.columns = columns
         result_final =a
         # st.dataframe(a)
         ################## temp ###############################
@@ -320,6 +326,11 @@ if 'csv' in st.session_state:
             ANALv2.setDimensions('elapsedVideoTimeRatio')
             ANALv2.setMetrics('relativeRetentionPerformance')
             for video_id in st.session_state['csv']['videoIDs'].tolist():
+                
+                st.write("Retention Requested")
+                start = timeit.default_timer()
+                overall_start = timeit.default_timer()
+                
                 request = ANALv2.build.reports().query(
                     endDate = ANALv2.endDate,
                     startDate = ANALv2.startDate,
@@ -329,7 +340,9 @@ if 'csv' in st.session_state:
                     filters = 'video=='+str(video_id)
                 )
                 response = request.execute()
-                
+                st.write('Time took was :', timeit.default_timer() - start)
+                st.write('After request dataframe management')
+                start = timeit.default_timer()
                 
                 
                 
@@ -421,6 +434,7 @@ if 'csv' in st.session_state:
                             top10 = df
                         else:
                             top10 = pd.concat([top10, df])
+                st.write("It took :", timeit.default_timer() - start)
             
             
             
@@ -624,7 +638,7 @@ if 'csv' in st.session_state:
             # st.dataframe(top10df)
             
             # st.dataframe(top10_overall.reset_index(drop=True))
-            st.subheader("Top 10 Performing Videos (Relative Retention)")
+            tab1.subheader("Top 10 Performing Videos (Relative Retention)")
             a= pd.DataFrame(top10_overall.reset_index(drop=True)).join(top10df)
             # st.dataframe(a.iloc[:,0]*100)
             d = pd.DataFrame(top10_overall.reset_index(drop=True)).join(top10df)
@@ -634,8 +648,8 @@ if 'csv' in st.session_state:
             arr[1] = 'Video ID'
             arr[2] = 'Video Title'
             d.columns = arr
-            st.dataframe(d)
-            
+            tab1.dataframe(d)
+            st.write("Overall Retention took: ", timeit.default_timer() - overall_start)
             # top10_overall.assign(1, 'videoTitle', haha, True)
             # st.write(haha)
             # st.dataframe(top10_overall)
@@ -665,101 +679,101 @@ if 'csv' in st.session_state:
 
             st.stop()
 
-            # First get the overall relative retention performance
-            a = pd.pivot_table(result_final, index = 'elapsedVideoTimeRatio', values = 'relativeRetentionPerformance', aggfunc='mean')
-            total_retention_mean = a.values.mean()
+            # # First get the overall relative retention performance
+            # a = pd.pivot_table(result_final, index = 'elapsedVideoTimeRatio', values = 'relativeRetentionPerformance', aggfunc='mean')
+            # total_retention_mean = a.values.mean()
 
-            fig = px.line(a, x=a.index, y='relativeRetentionPerformance', title=str(ANALv2.channelName))
-            st.plotly_chart(fig)
+            # fig = px.line(a, x=a.index, y='relativeRetentionPerformance', title=str(ANALv2.channelName))
+            # st.plotly_chart(fig)
 
-            st.dataframe(a)
+            # st.dataframe(a)
             
 
-            st.write("top 10")
-            b = pd.pivot_table(top10, index = 'elapsedVideoTimeRatio', values = 'relativeRetentionPerformance', aggfunc='mean')
-
-
-            fig = px.line(b, x=b.index, y='relativeRetentionPerformance', title=str(ANALv2.channelName))
-            st.plotly_chart(fig)
-
-            st.dataframe(b)
-
-            st.write("percentile of top 10 videos")
-            
-            
-            
-            
-            
-            
-            
-            
-            # relative retention performance BASED ON LENGTH
-            st.dataframe(shortDF)
-            st.header("Retention Performance: Broken Down By LENGTH")
-            
-            
-            short = pd.pivot_table(shortDF, index = 'elapsedVideoTimeRatio', values = 'relativeRetentionPerformance', aggfunc='mean')
-            try:
-                medium = pd.pivot_table(mediumDF, index = 'elapsedVideoTimeRatio', values = 'relativeRetentionPerformance', aggfunc='mean')
-            except:
-                pass
-            long = pd.pivot_table(longDF, index = 'elapsedVideoTimeRatio', values = 'relativeRetentionPerformance', aggfunc='mean')
+            # st.write("top 10")
+            # b = pd.pivot_table(top10, index = 'elapsedVideoTimeRatio', values = 'relativeRetentionPerformance', aggfunc='mean')
 
 
+            # fig = px.line(b, x=b.index, y='relativeRetentionPerformance', title=str(ANALv2.channelName))
+            # st.plotly_chart(fig)
+
+            # st.dataframe(b)
+
+            # st.write("percentile of top 10 videos")
+            
+            
+            
+            
+            
+            
+            
+            
+            # # relative retention performance BASED ON LENGTH
+            # st.dataframe(shortDF)
+            # st.header("Retention Performance: Broken Down By LENGTH")
+            
+            
+            # short = pd.pivot_table(shortDF, index = 'elapsedVideoTimeRatio', values = 'relativeRetentionPerformance', aggfunc='mean')
+            # try:
+            #     medium = pd.pivot_table(mediumDF, index = 'elapsedVideoTimeRatio', values = 'relativeRetentionPerformance', aggfunc='mean')
+            # except:
+            #     pass
+            # long = pd.pivot_table(longDF, index = 'elapsedVideoTimeRatio', values = 'relativeRetentionPerformance', aggfunc='mean')
+
+
 
             
-            short_fig = px.line(short, x=short.index, y='relativeRetentionPerformance', title=f'Length: Short ({int(q_array[0])} ~ {int(q_array[1])}) seconds', range_y=[0,1])
+            # short_fig = px.line(short, x=short.index, y='relativeRetentionPerformance', title=f'Length: Short ({int(q_array[0])} ~ {int(q_array[1])}) seconds', range_y=[0,1])
     
-            try:
-                medium_fig = px.line(medium, x=medium.index, y='relativeRetentionPerformance', title=f'Length: Medium ({int(q_array[1])} ~ {int(q_array[2])}) seconds', range_y=[0,1])
-            except:
-                pass
-            long_fig = px.line(long, x=long.index, y='relativeRetentionPerformance', title=f'Length: Long ({int(q_array[2])} ~ {int(q_array[3])}) seconds', range_y=[0,1])
+            # try:
+            #     medium_fig = px.line(medium, x=medium.index, y='relativeRetentionPerformance', title=f'Length: Medium ({int(q_array[1])} ~ {int(q_array[2])}) seconds', range_y=[0,1])
+            # except:
+            #     pass
+            # long_fig = px.line(long, x=long.index, y='relativeRetentionPerformance', title=f'Length: Long ({int(q_array[2])} ~ {int(q_array[3])}) seconds', range_y=[0,1])
             
             
-            # short_f = go.Figure(data=go.Scatter(x=short.index, y = short.values, name='short'))
-            # to = go.Figure(data=go.Scatter(x= a.index, y = a.values, name='total', line=dict(color='yellow')))
-            # short_f.add_trace(to)
-            # short_f.show()
-            short_fig.data[0].line.color = "#ffa600"
-            # medium_fig.data[0].line.color = '#ff6361'
-            long_fig.data[0].line.color = '#bc5090'
-            tab1, tab2, tab3 = st.tabs(["📈 Chart", "📊 Compare", "🗃 Data"])
-            tab1.subheader("Length Category: SHORT | Retention Performance")
-            tab1.plotly_chart(short_fig)
-            # tab1.subheader("Length Category: Medium | Retention Performance")
-            # tab1.plotly_chart(medium_fig)
-            tab1.subheader("Length Category: LONG | Retention Performance")
-            tab1.plotly_chart(long_fig)
+            # # short_f = go.Figure(data=go.Scatter(x=short.index, y = short.values, name='short'))
+            # # to = go.Figure(data=go.Scatter(x= a.index, y = a.values, name='total', line=dict(color='yellow')))
+            # # short_f.add_trace(to)
+            # # short_f.show()
+            # short_fig.data[0].line.color = "#ffa600"
+            # # medium_fig.data[0].line.color = '#ff6361'
+            # long_fig.data[0].line.color = '#bc5090'
+            # tab1, tab2, tab3 = st.tabs(["📈 Chart", "📊 Compare", "🗃 Data"])
+            # tab1.subheader("Length Category: SHORT | Retention Performance")
+            # tab1.plotly_chart(short_fig)
+            # # tab1.subheader("Length Category: Medium | Retention Performance")
+            # # tab1.plotly_chart(medium_fig)
+            # tab1.subheader("Length Category: LONG | Retention Performance")
+            # tab1.plotly_chart(long_fig)
 
 
 
-            fig.data[0].line.color = "#58508d"
-            fig.data[0].line.dash = "dash"
-            fig.data[0].name = 'Total'
+            # fig.data[0].line.color = "#58508d"
+            # fig.data[0].line.dash = "dash"
+            # fig.data[0].name = 'Total'
             
 
-            total_fig = go.Figure(data = short_fig.data + long_fig.data + fig.data)
-            total_fig.update_layout(showlegend=True)
-            # f.show()
-            tab2.subheader("TOTAL DATA COMPARISON ANALYSIS")
-            tab2.plotly_chart(total_fig)
+            # total_fig = go.Figure(data = short_fig.data + long_fig.data + fig.data)
+            # total_fig.update_layout(showlegend=True)
+            # # f.show()
+            # tab2.subheader("TOTAL DATA COMPARISON ANALYSIS")
+            # tab2.plotly_chart(total_fig)
 
             
             
-            col1,col2 = tab3.columns(2)
-            with col1:
-                tab3.subheader("Length Category: SHORT | DataFrame")
-                tab3.dataframe(shortDF)
-            # tab3.subheader("Length Category: Medium | DataFrame")
-            # tab3.dataframe(mediumDF)
-            with col2:
-                tab3.subheader("Length Category: LONG | DataFrame")
-                tab3.dataframe(longDF)
+            # col1,col2 = tab3.columns(2)
+            # with col1:
+            #     tab3.subheader("Length Category: SHORT | DataFrame")
+            #     tab3.dataframe(shortDF)
+            # # tab3.subheader("Length Category: Medium | DataFrame")
+            # # tab3.dataframe(mediumDF)
+            # with col2:
+            #     tab3.subheader("Length Category: LONG | DataFrame")
+            #     tab3.dataframe(longDF)
 
-            # st.plotly_chart(long_fig)
-            # long_fig.data[0].line.color = '#13F6E9'
-            # long_f = go.Figure(data = long_fig.data + fig.data)
-            # long_f.update_layout(showlegend=True)
-            # st.write("Comparison to Overall")
-            # st.plotly_chart(long_f)
+            # # st.plotly_chart(long_fig)
+            # # long_fig.data[0].line.color = '#13F6E9'
+            # # long_f = go.Figure(data = long_fig.data + fig.data)
+            # # long_f.update_layout(showlegend=True)
+            # # st.write("Comparison to Overall")
+            # # st.plotly_chart(long_f)
