@@ -1,14 +1,14 @@
 !!python/object/new:oauthlib.oauth2.rfc6749.tokens.OAuth2Token
 dictitems:
-  access_token: ya29.a0AVA9y1virgZZKQfsf6nD7Y1skW6UTqwBAC8IRDvpKEGIXrFKLBS5Xt9jGj6Zk65wC86wRLt83ZSGC-t8PS-5mUg18oaasNDLSqkoN_FMBaGBx9G-cRsKutpZ9JGZDeIFAwVUlHgolSw8gPLcQ3cqM0E2JPJ9aCgYKATASAQASFQE65dr8pE1cltW6d3X3YV5Ll5snDQ0163
-  expires_at: 1661912097.2882702
+  access_token: ya29.a0AVA9y1vyeESdzHGZgwHq0ICYDRw_HshlyOG_967HoxAO1z4XIqKr_-7va22iHt2x9MClEjw42B01pqPW4ku26w1Jmzb7HXXepAo0BisrjgVW_LEk5xl7I78OkxChB9FsZOC3XLqrQ_7tXb3bYhYWaK09837uaCgYKATASAQASFQE65dr8vm34esWy6-qwdrOfPQzVUA0163
+  expires_at: 1662283109.6376657
   expires_in: 3599
-  refresh_token: 1//049YYjGaqoVRMCgYIARAAGAQSNwF-L9IrzXRlylJEDOnkVEWIFDDhSp0JTMiTC04MgzBbnJ3hXgvyfPamVWBrGr2NRyRu-0YN59Q
+  refresh_token: 1//04rx1hCS9HOAhCgYIARAAGAQSNwF-L9IrrPRtC37onMv2eMW9MqCeU5xZ4HX72-o4JoIsc_-OoUo9wWzJhdp2HFQfhU2rqO8NYwo
   scope:
+  - https://www.googleapis.com/auth/youtube
   - https://www.googleapis.com/auth/youtubepartner
   - https://www.googleapis.com/auth/yt-analytics-monetary.readonly
   - https://www.googleapis.com/auth/yt-analytics.readonly
-  - https://www.googleapis.com/auth/youtube
   token_type: Bearer
 state:
   _new_scope: !!set

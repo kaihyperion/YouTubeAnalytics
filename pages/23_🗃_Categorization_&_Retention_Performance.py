@@ -83,16 +83,23 @@ if 'csv' in st.session_state:
                                         options=['length', 'content_type'])
         st.session_state['user_option'] = category_choice
         
-        
-        st.session_state['start'] = st.date_input("Start Date: ", value=datetime.strptime("2009-01-01", "%Y-%m-%d"))
-        st.session_state['end'] = st.date_input("End Date: ")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.session_state['start'] = st.date_input("Start Date: ", value=datetime.strptime("2020-01-01", "%Y-%m-%d"))
+            short_options = st.checkbox("Exclude Shorts")
+            retention_flag = st.checkbox("Include Retention Data")
+        with col2:
+            st.session_state['end'] = st.date_input("End Date: ")
+            st.write("  ")
+            st.write(" ")
+            submitted = st.form_submit_button("Submit")
+
         ANALv2.startDate = st.session_state['start']
         ANALv2.endDate = st.session_state['end']
         
         
-        short_options = st.checkbox("Exclude Shorts")
-        retention_flag = st.checkbox("Include Retention Data")
-        submitted = st.form_submit_button("Submit")
+
+        
     
     
     
@@ -184,8 +191,7 @@ if 'csv' in st.session_state:
         ################## temp ###############################
         startTime = time.time()
         temp_list = st.session_state['csv']['videoIDs'].tolist()[:499]
-        # st.write(temp_list)
-        # st.subheader("request making")
+
         request = ANALv2.build.reports().query(
             dimensions = 'video',
             endDate = ANALv2.endDate,
@@ -194,7 +200,7 @@ if 'csv' in st.session_state:
             metrics = 'estimatedRevenue,cpm,subscribersGained',
             filters = f'video=={",".join(temp_list)}'
         )
-        # st.subheader("request made | calling api")
+
         response = request.execute()
         
         a = pd.json_normalize(response, 'rows')
@@ -212,46 +218,6 @@ if 'csv' in st.session_state:
         
         # a.columns = columns
         result_final =a
-        # st.dataframe(a)
-        ################## temp ###############################
-        
-        
-        # startTime = time.time()
-        # for video_id in st.session_state['csv']['videoIDs'].tolist()[:499]:
-            
-        #     # if datetime.now() < token_expiry_datetime:
-        #     #     auth.token_Refresh()
-        #     #     # update the token_expiry_Datetime
-                
-        #     status_current += (1/size)
-        #     if status_current < 1:
-        #         status_bar.progress(status_current)
-        #     else:
-        #         status_bar.progress(100)
-            
-        #     request = ANALv2.build.reports().query(
-        #         endDate = ANALv2.endDate,
-        #         startDate = ANALv2.startDate,
-        #         ids = 'channel==MINE',
-        #         metrics = 'estimatedRevenue,cpm,subscribersGained',
-        #         filters = f'video=={video_id}'
-        #     )
-        #     response = request.execute()
-            
-        #     columns = [i['name'] for i in response['columnHeaders']]
-        #     if response['rows'] == []:
-        #         # st.write('passed')
-        #         pass
-        #     else:
-        #         df = pd.DataFrame(response['rows'])
-        #         df.columns = columns
-        #         df.insert(0, 'videoIDs', str(video_id))
-        #         if result_final.empty:
-        #             result_final = df
-        #         else:
-        #             result_final = pd.concat([result_final, df])
-        # st.write(f"time taken: {time.time() - startTime}")
-        # st.dataframe(result_final)
         ########################3
         # newDF: This is the dataframe that will hold all the important data that is necessary for retention analysis and CT analysis
         # use the newDF

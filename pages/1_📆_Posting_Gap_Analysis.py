@@ -21,8 +21,6 @@ import string
 
 
 st.title("Posting Gap Analysis (Day of Week)")
-with st.expander("Details regarding Posting Gap Analysis (PGA for short)"):
-    st.write("This allows (private) users to view Posting Gap Analysis of their channel. There are Days of Week Analysis as well.")
 
 config = configparser.ConfigParser()
 config.read('conf.ini')
@@ -41,18 +39,21 @@ ANALv2.api_build()
 DATAv3.api_build()
 
 
-if 'start' not in st.session_state:
-    st.session_state['start'] = '2021-06-20'
+date_col1, date_col2 = st.columns(2)
 
-st.session_state['start'] = st.date_input("Start Date: ", value=datetime.strptime("2010-01-01", "%Y-%m-%d"))
-ANALv2.setStartDate(st.session_state['start'])
+with date_col1:
+    if 'PGAstart' not in st.session_state:
+        st.session_state['PGAstart'] = '2021-06-20'
+    st.session_state['PGAstart'] = st.date_input("Start Date: ", value=datetime.strptime("2020-01-01", "%Y-%m-%d"))
+    ANALv2.setStartDate(st.session_state['PGAstart'])
 
-if 'end' not in st.session_state:
-    st.session_state['end'] = st.date_input("End Date: ")
+with date_col2:
+    if 'PGAend' not in st.session_state:
+        st.session_state['PGAend'] = st.date_input("End Date: ")
 
-st.session_state['end'] = st.date_input("End Date: ")
+# st.session_state['PGAend'] = st.date_input("End Date: ")
 
-ANALv2.setEndDate(st.session_state['end'])
+    ANALv2.setEndDate(st.date_input("End Date: "))
 
 
 if st.button('Retrieve Data'):
@@ -146,29 +147,24 @@ if st.button('Retrieve Data'):
                             'YT_SEARCH':'Search'})\
         .reindex(cats).style\
             .format("{:,.0f}")\
-                .highlight_max(axis=0, color='#00e94f')\
-                    .highlight_min(axis=0, color='#df8af4')
+                .highlight_max(axis=0, color='lightgreen')\
+                    .highlight_min(axis=0, color='#cd4f39')
  
     
     with tab1:
         tab1.subheader("Days of Week Analysis on Content Types")
-        # col1, col2, col3, col4 = tab1.columns(4)
         
-        # col1.subheader('Browse')
-        # col2.subheader('Suggested')
-        # col3.subheader('Shorts')
-        # col4.subheader('Search')
-        # col1.dataframe(browse.groupby('DOW')['views'].mean())
-        # col2.dataframe(suggested.groupby('DOW')['views'].mean().astype(int))
-        # col3.dataframe(shorts.groupby('DOW')['views'].mean().astype(int))
-        # col4.dataframe(search.groupby('DOW')['views'].mean().astype(int))
-        st.table(grouped)
-        st.table(df.loc[df.insightTrafficSourceType.isin(['SUBSCRIBER','RELATED_VIDEO','SHORTS','YT_SEARCH'])]\
-        .pivot_table(index='DOW',
-                     columns='insightTrafficSourceType', 
-                     values='views', 
-                     aggfunc='mean')\
-        .reindex(cats).mean(axis=1).to_frame(name='Overall Average').style.format("{:,.0f}").background_gradient(cmap='viridis'))
+        col1, col2 = st.columns([6,4])
+        with col1:
+            st.table(grouped)
+        
+        with col2:
+            st.table(df.loc[df.insightTrafficSourceType.isin(['SUBSCRIBER','RELATED_VIDEO','SHORTS','YT_SEARCH'])]\
+            .pivot_table(index='DOW',
+                        columns='insightTrafficSourceType', 
+                        values='views', 
+                        aggfunc='mean')\
+            .reindex(cats).mean(axis=1).to_frame(name='Overall Average').style.format("{:,.0f}").background_gradient(cmap='Oranges'))
 
 
 
@@ -185,13 +181,9 @@ if st.button('Retrieve Data'):
     # print(df)
     with tab2:
         tab2.subheader("Posting Gap Average analysis")
-        # col0, col1, col2, col3, col4 = tab2.columns(5)
-
-        # col0.subheader("OVERALL")
-        # col1.subheader('Browse')
-        # col2.subheader('Suggested')
-        # col3.subheader('Shorts')
-        # col4.subheader('Search')
+        
+        col1, col2 = st.columns([3,1])
+        
         postingGap_df = df.loc[df.insightTrafficSourceType.isin(['SUBSCRIBER','RELATED_VIDEO','SHORTS','YT_SEARCH'])]\
             .pivot_table(index='gap_days',
                          columns='insightTrafficSourceType',
@@ -204,15 +196,15 @@ if st.button('Retrieve Data'):
             
         postingGap_df.index = postingGap_df.index.astype(int)
         postingGap_df.index.name = 'gap_Days'
-        st.table(postingGap_df.fillna(0).sort_index().style.format("{:,.0f}")\
-                                    .highlight_max(axis=0, color='#00e94f')\
-                                        .highlight_min(axis=0, color='#df8af4'))
-        st.table(postingGap_df.sort_index().mean(axis=1).to_frame(name='Overall Average').style.format("{:,.0f}").background_gradient(cmap='viridis'))
-        # col0.dataframe(df.groupby('gap_days')['views'].mean())
-        # col1.dataframe(postingGap_browse.groupby('gap_days')['views'].mean())
-        # col2.dataframe(postingGap_suggested.groupby('gap_days')['views'].mean())
-        # col3.dataframe(postingGap_shorts.groupby('gap_days')['views'].mean())
-        # col4.dataframe(postingGap_search.groupby('gap_days')['views'].mean())
+        
+        with col1:
+            st.table(postingGap_df.fillna(0).sort_index().style.format("{:,.0f}")\
+                                        .highlight_max(axis=0, color='lightgreen')\
+                                            .highlight_min(axis=0, color='#cd4f39'))
+        
+        with col2:
+            st.table(postingGap_df.sort_index().mean(axis=1).to_frame(name='Overall Average').style.format("{:,.0f}").background_gradient(cmap='BuGn'))
+
         
 
 
@@ -225,6 +217,7 @@ if st.button('Retrieve Data'):
     # postingGap_search = df[df['insightTrafficSourceType'] == 'YT_SEARCH']
 
     with tab3:
+        col1, col2 = st.columns([3,1])
         tab3.subheader("SHORTS Posting Gap Average analysis")
         postingGapShorts_df = df.loc[df.insightTrafficSourceType.isin(['SUBSCRIBER','RELATED_VIDEO','SHORTS','YT_SEARCH'])]\
             .pivot_table(index='gap_days',
@@ -237,11 +230,14 @@ if st.button('Retrieve Data'):
                             'YT_SEARCH':'Search'})
         postingGapShorts_df.index = postingGapShorts_df.index.astype(int)
         postingGapShorts_df.index.name = 'gap_Days'
-        st.table(postingGapShorts_df.fillna(0).sort_index().head(10).style.format("{:,.0f}")\
-                                    .highlight_max(axis=0, color='#00e94f')\
-                                        .highlight_min(axis=0, color='#df8af4'))
-        st.table(postingGapShorts_df.sort_index().head(10).mean(axis=1).to_frame(name='Overall Average').style.format("{:,.0f}").background_gradient(cmap='viridis'))
+        with col1:
+            st.table(postingGapShorts_df.fillna(0).sort_index().head(10).style.format("{:,.0f}")\
+                                        .highlight_max(axis=0, color='lightgreen')\
+                                            .highlight_min(axis=0, color='#cd4f39'))
         
+        with col2:
+            st.table(postingGapShorts_df.sort_index().head(10).mean(axis=1).to_frame(name='Overall Average').style.format("{:,.0f}").background_gradient(cmap='Reds'))
+            
         # col0, col1, col2, col3, col4 = tab3.columns(5)
 
         # col0.subheader("OVERALL")
@@ -255,3 +251,5 @@ if st.button('Retrieve Data'):
         # col3.dataframe(postingGap_shorts.groupby('gap_days')['views'].mean())
         # col4.dataframe(postingGap_search.groupby('gap_days')['views'].mean())
         
+with st.expander("ℹ️"):
+    st.write("Details regarding Posting Gap Analysis (PGA for short).\ This allows (private) users to view Posting Gap Analysis of their channel. There are Days of Week Analysis as well.")
