@@ -58,6 +58,7 @@ DATAv3.api_build()
 
 
 
+
 col1, col2 = st.columns([4, 6])
 with col1:
     st.subheader("Token expires in : \n" +str(int((token_expiry_datetime - now).seconds/60))+ " minutes")
@@ -80,16 +81,23 @@ with col2:
         resp = DATAv3.build.channels().list(part='snippet', mine=True).execute()
         channelName = resp['items'][0]['snippet']['title']
         st.subheader("Currently signed in as: " + channelName)
+        
 
 
     else: # if the token is invalid, we must reauthenticate
         st.subheader("Your Token Expired:")
         auth.re_authorize()
-
+        
+    
 
     if st.button("change account"):
         st.session_state['accountChangeFlag'] = True
         st.experimental_rerun()
+        
+if datetime.now() < token_expiry_datetime:
+    resp = DATAv3.build.channels().list(part='snippet', mine=True).execute()
+    channelName = resp['items'][0]['snippet']['title']
+    st.subheader("Currently signed in as: " + channelName)
 
 # token = auth.load_token()
 # credentials = auth.get_credentials()

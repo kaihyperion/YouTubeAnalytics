@@ -49,11 +49,11 @@ with date_col1:
 
 with date_col2:
     if 'PGAend' not in st.session_state:
-        st.session_state['PGAend'] = st.date_input("End Date: ")
+        st.session_state['PGAend'] = datetime.now().strftime("%Y-%m-%d")
 
 # st.session_state['PGAend'] = st.date_input("End Date: ")
-
-    ANALv2.setEndDate(st.date_input("End Date: "))
+    
+    ANALv2.setEndDate(st.date_input("End date: "))
 
 
 if st.button('Retrieve Data'):
@@ -210,7 +210,8 @@ if st.button('Retrieve Data'):
 
     #######
     # SHORTS analysis
-    df = date_and_gap_shorts.merge(df_copy[['date', 'views', 'insightTrafficSourceType']], how='left', on='date').fillna(0)
+    if date_and_gap_shorts:
+        df = date_and_gap_shorts.merge(df_copy[['date', 'views', 'insightTrafficSourceType']], how='left', on='date').fillna(0)
     # postingGap_browse = df[df['insightTrafficSourceType'] == 'SUBSCRIBER']
     # postingGap_suggested = df[df['insightTrafficSourceType'] == 'RELATED_VIDEO']
     # postingGap_shorts = df[df['insightTrafficSourceType'] == 'SHORTS']

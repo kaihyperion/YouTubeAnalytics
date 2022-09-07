@@ -428,28 +428,32 @@ class YouTubeData:
         # first get rid of shorts
         df = df.loc[df['length_in_seconds'] <= 60]
         dates = [i.split('T')[0] for i in df['publishedDate'].to_list()]
+ 
         timestamps = [pd.Timestamp(i) for i in dates]
-        gaps = [int(0) for i in range(len(timestamps))]
-        series = pd.Series(gaps, index=timestamps)
-        s = pd.Series(index=pd.date_range(series.index.min(), 
-                                          series.index.max(), 
-                                          freq='D').difference(series.index))
-        s= s.fillna(1.0)
-        result = pd.concat([series, s]).sort_index()
-        # print("sorting complete")
-        result = result.fillna(False)
-        result = result.astype(bool)
-        final = pd.DataFrame({'date':result.index, 'gap':result.values})
-        # print("created dataframe")
-        # final = result.to_frame()
-        # final = final.rename(columns = {0:'item'})
-        # # final = result.astype(bool)
-        # # final = pd.DataFrame(result.astype(bool))
-        # print(type(final))
-        # print(f"This is column names: {final.columns}")
-        really_final = self.gap_calculator2(final)
-        # print(really_final.columns)
-        return really_final.astype(str)
+        if timestamps:
+            gaps = [int(0) for i in range(len(timestamps))]
+            series = pd.Series(gaps, index=timestamps)
+            s = pd.Series(index=pd.date_range(series.index.min(), 
+                                            series.index.max(), 
+                                            freq='D').difference(series.index))
+            s= s.fillna(1.0)
+            result = pd.concat([series, s]).sort_index()
+            # print("sorting complete")
+            result = result.fillna(False)
+            result = result.astype(bool)
+            final = pd.DataFrame({'date':result.index, 'gap':result.values})
+            # print("created dataframe")
+            # final = result.to_frame()
+            # final = final.rename(columns = {0:'item'})
+            # # final = result.astype(bool)
+            # # final = pd.DataFrame(result.astype(bool))
+            # print(type(final))
+            # print(f"This is column names: {final.columns}")
+            really_final = self.gap_calculator2(final)
+            # print(really_final.columns)
+            return really_final.astype(str)
+        else:
+            return []
     
     
     def createDF_script1(self):
