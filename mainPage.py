@@ -54,9 +54,7 @@ credentials = auth.get_credentials()
 DATAv3 = youtubeData.YouTubeData(credentials)
 DATAv3.api_build()
 
-resp = DATAv3.build.channels().list(part='snippet', mine=True).execute()
-channelName = resp['items'][0]['snippet']['title']
-st.subheader("Currently signed in as: " + channelName)
+
 
 
 
@@ -79,7 +77,10 @@ with col2:
     if datetime.now() < token_expiry_datetime:
         # since it is valid, we can just authenticate
         st.subheader("Your Token is still Valid!")
-        
+        resp = DATAv3.build.channels().list(part='snippet', mine=True).execute()
+        channelName = resp['items'][0]['snippet']['title']
+        st.subheader("Currently signed in as: " + channelName)
+
 
     else: # if the token is invalid, we must reauthenticate
         st.subheader("Your Token Expired:")
