@@ -214,19 +214,16 @@ if 'csv' in st.session_state:
             st.write("No data found")
             st.stop()
         
-        # st.write(f"time taken: {time.time() - startTime}")
+
         
         
         a.columns = [i['name'] for i in response['columnHeaders']]
-        # st.write(f"columns are {columns}")
-        # st.dataframe(a)
-        
-        # a.columns = columns
+
         result_final =a
         ########################3
         # newDF: This is the dataframe that will hold all the important data that is necessary for retention analysis and CT analysis
         # use the newDF
-        # st.dataframe(st.session_state['csv'])
+
         result_final=result_final.rename(columns = {'video':'videoIDs'})
         newDF = result_final.merge(st.session_state['csv'], on= ['videoIDs','videoIDs'])
         # newDF = pd.merge(st.session_state['csv'], result_final, on)
@@ -237,7 +234,7 @@ if 'csv' in st.session_state:
         finalDF_expander = st.expander("Click Here to see the final dataframe and to download the CSV")
         finalDF_expander.dataframe(newDF)
         
-        # st.dataframe(newDF)
+
         finalDF_expander.download_button("CSV download", data=newDF.to_csv().encode('utf-8'), file_name=(f'mock_{datetime.now().strftime("%m.%d.%Y_%H:%M")}.csv'))
         
         # Depending on user_option, ST will display appropriate table
@@ -280,7 +277,7 @@ if 'csv' in st.session_state:
         ##########
         
         # Retention data
-        # st.dataframe(newDF)
+        
         # grab video category list video IDS
         shortVideo_ID_List = newDF.loc[newDF['video_length_category'] == 'short']['videoIDs'].tolist()
         mediumVideo_ID_List = newDF.loc[newDF['video_length_category'] == 'medium']['videoIDs'].tolist()
