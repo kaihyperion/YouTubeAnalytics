@@ -94,10 +94,10 @@ with col2:
         st.session_state['accountChangeFlag'] = True
         st.experimental_rerun()
         
-if datetime.now() < token_expiry_datetime:
-    resp = DATAv3.build.channels().list(part='snippet', mine=True).execute()
-    channelName = resp['items'][0]['snippet']['title']
-    st.subheader("Currently signed in as: " + channelName)
+# if datetime.now() < token_expiry_datetime:
+#     resp = DATAv3.build.channels().list(part='snippet', mine=True).execute()
+#     channelName = resp['items'][0]['snippet']['title']
+#     st.subheader("Currently signed in as: " + channelName)
 
 # token = auth.load_token()
 # credentials = auth.get_credentials()
