@@ -92,10 +92,10 @@ class YouTubeAnalytics:
     
     def addRPM(self, df):
         temp = df.copy()
-        st.dataframe(temp)
+        # st.dataframe(temp)
         temp['RPM'] = (temp['estimatedRevenue'] * 1000 / (temp['views']))
         temp['RPM'][np.isinf(temp['RPM'])] = 0
-        st.dataframe(temp)
+        # st.dataframe(temp)
         return temp
     
     def downloadCSV(self, channelData, videoid):

@@ -153,6 +153,7 @@ class YouTubeData:
     def getChannelName(self):
         """If we have response from getChannelRequest, we can also get Channel Name
         """
+        print(self.response['items'])
         self.setChannelName(self.response['items'][0]['snippet']['title'])
         
     def getStatistics(self):

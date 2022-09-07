@@ -147,8 +147,8 @@ if st.button('Retrieve Data'):
                             'YT_SEARCH':'Search'})\
         .reindex(cats).style\
             .format("{:,.0f}")\
-                .highlight_max(axis=0, color='lightgreen')\
-                    .highlight_min(axis=0, color='#cd4f39')
+                .highlight_max(axis=0, color='#00DF4F')\
+                    .highlight_min(axis=0, color='#DE1D16')
  
     
     with tab1:
@@ -199,8 +199,8 @@ if st.button('Retrieve Data'):
         
         with col1:
             st.table(postingGap_df.fillna(0).sort_index().style.format("{:,.0f}")\
-                                        .highlight_max(axis=0, color='lightgreen')\
-                                            .highlight_min(axis=0, color='#cd4f39'))
+                                        .highlight_max(axis=0, color='#00DF4F')\
+                                            .highlight_min(axis=0, color='#DE1D16'))
         
         with col2:
             st.table(postingGap_df.sort_index().mean(axis=1).to_frame(name='Overall Average').style.format("{:,.0f}").background_gradient(cmap='BuGn'))
@@ -232,8 +232,8 @@ if st.button('Retrieve Data'):
         postingGapShorts_df.index.name = 'gap_Days'
         with col1:
             st.table(postingGapShorts_df.fillna(0).sort_index().head(10).style.format("{:,.0f}")\
-                                        .highlight_max(axis=0, color='lightgreen')\
-                                            .highlight_min(axis=0, color='#cd4f39'))
+                                        .highlight_max(axis=0, color='#00DF4F')\
+                                            .highlight_min(axis=0, color='#DE1D16'))
         
         with col2:
             st.table(postingGapShorts_df.sort_index().head(10).mean(axis=1).to_frame(name='Overall Average').style.format("{:,.0f}").background_gradient(cmap='Reds'))

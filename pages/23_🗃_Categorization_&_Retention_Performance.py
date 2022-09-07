@@ -107,6 +107,9 @@ if 'csv' in st.session_state:
     
     if submitted:
         st.success('CSV is still correctly loaded')
+        csv_expander = st.expander("Click Here to see the uploaded CSV file")
+        csv_expander.dataframe(st.session_state['csv'])
+        
         ANALv2.setStartDate(st.session_state['start'])
         ANALv2.setEndDate(st.session_state['end'])
         
@@ -116,14 +119,17 @@ if 'csv' in st.session_state:
         
         # Find the Length Category of videos
         
-        col1, col2 = st.columns(2)
+        
         if 'length' in st.session_state['user_option']:
+            st.header('Length Type Video Count')
+            col1, col2 = st.columns(2)
             if 'length_in_seconds' not in st.session_state['csv']:
                 
                 #video_length_classifier will convert the session_state['csv'] to include length_category
                 st.session_state['csv'],q_array = DATAv3.video_length_classifier(st.session_state['csv'])
                 with col1:
                     st.write(st.session_state['csv']['video_length_category'].value_counts())
+                    st.write("")
                 # st.write(q_array)
                 
                 with col2:
@@ -134,31 +140,30 @@ if 'csv' in st.session_state:
                 st.session_state['csv'], q_array = DATAv3.video_length_classifier(st.session_state['csv'])
                 with col1:
                     st.write(st.session_state['csv']['video_length_category'].value_counts())
+                    st.write(" ")
                 with col2:
-                    st.write(f"short: {int(q_array[0])} ~ {int(q_array[1])}")
-                    st.write(f"medium: {int(q_array[1])} ~ {int(q_array[2])}")
-                    st.write(f"long: {int(q_array[2])} ~ {int(q_array[3])}")
+                    st.write(f"Short: {int(q_array[0])} ~ {int(q_array[1])} seconds")
+                    st.write(f"medium: {int(q_array[1])} ~ {int(q_array[2])} seconds")
+                    st.write(f"long: {int(q_array[2])} ~ {int(q_array[3])} seconds")
 
         if 'content_type' in st.session_state['user_option']:
             s = st.session_state['csv']['content_type']
             count = s.value_counts()
             percent = s.value_counts(normalize=True).mul(100).round(1).astype(str) + '%'
-            st.subheader('Content Type Video Count')
+            st.header('Content Type Video Count')
             st.table(pd.DataFrame({'Video Count': count, 'Percent': percent}).sort_index())
             # st.session_state['csv']['content_type'].index.name = 'content_type'
             # st.table(st.session_state['csv']['content_type'].value_counts().sort_index().rename('Video Count'))  
 
 
-        #just debugging
-        csv_expander = st.expander("Click Here to see the uploaded CSV file")
-        csv_expander.dataframe(st.session_state['csv'])
+        
         # st.dataframe(st.session_state['csv'])
         
         
         # if 'content_type' in st.session_state['user_option']:
         # st.dataframe(st.session_state['csv'])
-        #progress bar settings
-        status_bar = st.progress(0)
+        
+        
         size = len(st.session_state['csv']['videoIDs'])
         status_current = 0
         
@@ -209,12 +214,12 @@ if 'csv' in st.session_state:
             st.write("No data found")
             st.stop()
         
-        st.write(f"time taken: {time.time() - startTime}")
+        # st.write(f"time taken: {time.time() - startTime}")
         
         
         a.columns = [i['name'] for i in response['columnHeaders']]
         # st.write(f"columns are {columns}")
-        st.dataframe(a)
+        # st.dataframe(a)
         
         # a.columns = columns
         result_final =a
@@ -226,7 +231,7 @@ if 'csv' in st.session_state:
         newDF = result_final.merge(st.session_state['csv'], on= ['videoIDs','videoIDs'])
         # newDF = pd.merge(st.session_state['csv'], result_final, on)
         #add RPM column
-        st.dataframe(newDF)
+        
         newDF = ANALv2.addRPM(newDF)
         
         finalDF_expander = st.expander("Click Here to see the final dataframe and to download the CSV")
@@ -236,8 +241,13 @@ if 'csv' in st.session_state:
         finalDF_expander.download_button("CSV download", data=newDF.to_csv().encode('utf-8'), file_name=(f'mock_{datetime.now().strftime("%m.%d.%Y_%H:%M")}.csv'))
         
         # Depending on user_option, ST will display appropriate table
+        
+        if 'length' in st.session_state['user_option']:
+            st.header("Category Analysis by Length")
+            st.table(newDF.groupby('video_length_category')['estimatedRevenue', 'views', 'subscribersGained','RPM'].mean().style.format("{:,.2f}").highlight_max(color='#00DF4F').highlight_min(color='#DE1D16'))
+        
         if 'content_type' in st.session_state['user_option']:
-            st.table(newDF.groupby('content_type')['estimatedRevenue', 'views', 'subscribersGained','RPM'].mean().style.highlight_max(color='green').highlight_min(color='pink'))
+            
             
             # Top 5 videos from each content_type category
 
@@ -250,14 +260,17 @@ if 'csv' in st.session_state:
                     content_type_top5_df = top5
                 else:
                     content_type_top5_df = pd.concat([content_type_top5_df, top5])
-
-            st.header("This is top 5 videos of each content type")
-            st.table(content_type_top5_df.groupby('content_type')['estimatedRevenue', 'views', 'subscribersGained','RPM'].mean())
+            st.header("Category Analysis by Content Type")
             
-        if 'length' in st.session_state['user_option']:
-            st.dataframe(newDF.groupby('video_length_category')['estimatedRevenue', 'views', 'subscribersGained','RPM'].mean().style.highlight_max(color='green').highlight_min(color='pink'))
-        
-        
+            with st.expander("Top 5: Category Analysis by Content Type"):
+                st.header("This is top 5 videos of each content type")
+                st.table(content_type_top5_df.groupby('content_type')['estimatedRevenue', 'views', 'subscribersGained','RPM'].mean())
+            st.table(newDF.groupby('content_type')['estimatedRevenue', 'views', 'subscribersGained','RPM'].mean()\
+                .style.format("{:,.2f}")\
+                    .highlight_max(color='#00DF4F')\
+                        .highlight_min(color='#DE1D16'))
+                
+       
         
         
         
@@ -284,16 +297,21 @@ if 'csv' in st.session_state:
         result_final = pd.DataFrame()
         retention_DataFrame = pd.DataFrame(np.arange(0.01, 1.01, 0.01),
                                             columns= ['ratio'])
-        # retention_DataFrame = retention_DataFrame.set_index('elapsedVideoTimeRatio')
+
         top10 = pd.DataFrame()
         
         
         if retention_flag:
             ANALv2.setDimensions('elapsedVideoTimeRatio')
             ANALv2.setMetrics('relativeRetentionPerformance')
+            
+            status_bar = st.progress(0)
+            size = len(st.session_state['csv']['videoIDs'].tolist())
+            progress_add = 1/size
+            progress_curr = 0
             for video_id in st.session_state['csv']['videoIDs'].tolist():
                 
-                st.write("Retention Requested")
+                
                 start = timeit.default_timer()
                 overall_start = timeit.default_timer()
                 
@@ -306,75 +324,17 @@ if 'csv' in st.session_state:
                     filters = 'video=='+str(video_id)
                 )
                 response = request.execute()
-                st.write('Time took was :', timeit.default_timer() - start)
-                st.write('After request dataframe management')
-                start = timeit.default_timer()
                 
                 
-                
-                
-                
-                
-                # st.write(video_id)
                 
                 df = pd.json_normalize(response, 'rows')
                 try:
                     df.columns = ['elapsedVideoTimeRatio', str(video_id)]
-                    # a=a.set_index('elapsedVideoTimeRatio', inplace=True)
-                    # a.set_index('elapsedVideoTimeRatio', inplace=True)
-                    # st.dataframe(a)
-                    # st.subheader("adding")
+
                     retention_DataFrame = pd.concat([retention_DataFrame, df[video_id]], axis=1)
                 except:
-                    st.write(f"Video ID {video_id} has no data. We will skip")
                     pass
-                # st.dataframe(retention_DataFrame)
-                
-                # columns = [i['name'] for i in response['columnHeaders']]
-                            #add a videoID column in the front
-                # if response['rows'] == []:
-                #     st.write("passed")
-                #     pass
-                # else:
-                #     df = pd.DataFrame(response["rows"])
-                #     df.columns = columns
-                #     # df.insert(0,'videoIDs', str(video_id))
-                    
-                    
-                #     if retention_DataFrame.empty:
-                #         # If the overall retention Dataframe is empty, 
-                #         # then we just use the current dataframe and add it to the overall retention_Dataframe
-                        
-                #         # set the overall index to elapsedVideoTimeRatio
-                #         # Rename the relative Retention performance column with video_id
-                #         df = pd.DataFrame(response["rows"], columns=['elapsedVideoTimeRatio', 'relativeRetentionPerformance'])
-                #         df.set_index('elapsedVideoTimeRatio', inplace=True)
-                #         # df.index.name = 'index_column'
-                        
-                        
-                #         df.rename(columns={'relativeRetentionPerformance': str(video_id)}, inplace=True)
-                #         retention_DataFrame = df
-                #         st.write("empty | initialized!")
-                        
 
-                #     else:
-                #         # if the overall retention Dataframe is not empty,
-                #         # then we need to merge the current response to the overall retention_Dataframe
-                #         try:
-                #             retention_DataFrame.insert(loc=len(retention_DataFrame.columns), column = str(video_id), value = [i[1] for i in response['rows']])
-                            
-
-                #         except:
-                #             st.write("FAIL")
-                #             st.write(response['rows'])
-                #             st.dataframe(retention_DataFrame)
-                        
-                        
-                #     # if result_final.empty:
-                        
-                #     #     result_final = df
-                #     # else:
-                #     #     result_final = pd.concat([result_final, df])
                     
                     
                     
@@ -400,7 +360,14 @@ if 'csv' in st.session_state:
                             top10 = df
                         else:
                             top10 = pd.concat([top10, df])
-                st.write("It took :", timeit.default_timer() - start)
+                
+                progress_curr += progress_add
+                status_bar.progress(progress_curr)
+            
+            status_bar.progress(100)
+                
+                
+                
             
             
             
@@ -412,9 +379,13 @@ if 'csv' in st.session_state:
             # retention_DataFrame: retention_DataFrame
             
             # st.dataframe(retention_DataFrame)
-            retentionDF_expander = st.expander("Retention DataFrame | Expand to see DataFrame and download CSV")
-            retentionDF_expander.dataframe(retention_DataFrame)
             
+            
+            finalDF_expander = st.expander("Click Here to see the final dataframe and to download the CSV")
+            finalDF_expander.dataframe(newDF)
+            
+            # st.dataframe(newDF)
+            finalDF_expander.download_button("CSV Download", data=newDF.to_csv().encode('utf-8'), file_name=(f'mock_{datetime.now().strftime("%m.%d.%Y_%H:%M")}.csv'))
             
             ### Display by Content Type
             # content_type_list has all the content types
@@ -429,7 +400,7 @@ if 'csv' in st.session_state:
                 temp_hash[content_type] = video_idlist
                 
                 
-            with st.expander("Retention DataFrame by Content Type | Expand to see DataFrame and download CSV"):
+            with st.expander("Retention Graph Chart by Content Type | Expand to see DataFrame and download CSV"):
                 for content_type in sorted(content_type_list):
                     video_idlist = temp_hash[content_type]
                     
@@ -615,7 +586,7 @@ if 'csv' in st.session_state:
             arr[2] = 'Video Title'
             d.columns = arr
             tab1.dataframe(d)
-            st.write("Overall Retention took: ", timeit.default_timer() - overall_start)
+            # st.write("Overall Retention took: ", timeit.default_timer() - overall_start)
             # top10_overall.assign(1, 'videoTitle', haha, True)
             # st.write(haha)
             # st.dataframe(top10_overall)
@@ -624,7 +595,9 @@ if 'csv' in st.session_state:
             st.download_button("CSV download", data=result_final.to_csv().encode('utf-8'), file_name=(f'mock_{datetime.now().strftime("%m.%d.%Y_%H:%M")}.csv'))
 
 
-
+        
+            retentionDF_expander = st.expander("Retention DataFrame | Expand to see DataFrame and download CSV")
+            retentionDF_expander.dataframe(retention_DataFrame)
 
 
 

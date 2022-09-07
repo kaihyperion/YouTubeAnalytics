@@ -76,25 +76,26 @@ class Authorize:
             authorization_base_url,
             access_type="offline",
             prompt="select_account")
-        
-        with st.expander("Please Click the Link and Authorize"):
-            st.write("Please click the link: ", authorization_url)
-        with st.form("token_form"):
-            
-            response_code = st.text_input("Paste the response token: ")
-            token_submit = st.form_submit_button('Submit Token')
-        # response_code = input('Paste the response token: ')
-            if token_submit:
-                st.write("Token Submitted!")
-                self.token = self.session.fetch_token(
-                    self.token_uri, client_secret = self.client_secret,
-                    code = response_code)
+        with st.expander("Re-Authrozation Required:", expanded = False):
+            st.write("[Click to Authorize](%s)" % authorization_url)
+
+            with st.form("token_form"):
                 
-                # st.write(self.token)
-                self.save_token(self.token)
-                
-                #Save it into Streamlit session rather than file
-                st.session_state['user_token'] = self.token
+                response_code = st.text_input("Paste the response token: ")
+                token_submit = st.form_submit_button('Submit Token')
+            # response_code = input('Paste the response token: ')
+                if token_submit:
+                    st.write("Token Submitted!")
+                    self.token = self.session.fetch_token(
+                        self.token_uri, client_secret = self.client_secret,
+                        code = response_code)
+                    
+                    # st.write(self.token)
+                    self.save_token(self.token)
+                    
+                    #Save it into Streamlit session rather than file
+                    st.session_state['user_token'] = self.token
+                    st.experimental_rerun()
                 
         
     def token_Refresh(self):
